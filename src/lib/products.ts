@@ -49,7 +49,7 @@ export const products: Product[] = [
     id: 105,
     name: "Cozy Cashmere Sweater",
     price: 250.00,
-    category: "Knitwear",
+    category: "Outerwear",
     imageUrl: "https://picsum.photos/seed/product-105/600/800",
     imageHint: "cashmere sweater",
     description: "Indulge in the luxury of 100% pure cashmere. This sweater is incredibly soft, warm, and lightweight. Featuring a relaxed fit and ribbed trim, it's a timeless piece you'll treasure for years to come."
@@ -62,5 +62,14 @@ export const products: Product[] = [
     imageUrl: "https://picsum.photos/seed/product-106/600/800",
     imageHint: "summer dress",
     description: "Embrace the sunshine in this beautiful floral dress. The lightweight fabric and flowy silhouette make it perfect for warm weather, while the vibrant print adds a touch of playful elegance. Features an adjustable waist tie for a custom fit."
+  },
+  {
+    id: 107,
+    name: "Classic Trench Coat",
+    price: 350.00,
+    category: "Outerwear",
+    imageUrl: "https://picsum.photos/seed/product-107/600/800",
+    imageHint: "trench coat",
+    description: "A timeless trench coat that will never go out of style. Made from a water-resistant cotton blend, it's perfect for transitional weather. Features a double-breasted front, a belted waist, and a classic collar."
   }
 ];
