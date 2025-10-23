@@ -29,13 +29,19 @@ export default function AdminDashboardPage() {
 
         const unsubscribeProducts = onValue(productsRef, (snapshot) => {
             const data = snapshot.val();
-            const productsArray = data ? Object.values(data) : [];
+            const productsArray: Product[] = data ? Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            })) : [];
             setProducts(productsArray);
         });
 
         const unsubscribeOutfits = onValue(outfitsRef, (snapshot) => {
             const data = snapshot.val();
-            const outfitsArray = data ? Object.values(data) : [];
+            const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            })) : [];
             setOutfits(outfitsArray);
         });
 
@@ -46,35 +52,37 @@ export default function AdminDashboardPage() {
     }, [db]);
 
     const handleSetProducts = (newProducts: Product[]) => {
-        setProducts(newProducts);
         if (db) {
             const productsRef = ref(db, 'products');
             const productsObject = newProducts.reduce((acc, product) => {
-                acc[product.id] = product;
+                const { id, ...rest } = product;
+                acc[id] = rest;
                 return acc;
-            }, {} as Record<string | number, Product>);
+            }, {} as Record<string | number, Omit<Product, 'id'>>);
             set(productsRef, productsObject).then(() => {
                 toast({ title: "Products updated successfully!" });
             }).catch(error => {
                 toast({ variant: "destructive", title: "Error updating products", description: error.message });
             });
         }
+        setProducts(newProducts);
     };
     
     const handleSetOutfits = (newOutfits: Outfit[]) => {
-        setOutfits(newOutfits);
         if (db) {
             const outfitsRef = ref(db, 'outfits');
              const outfitsObject = newOutfits.reduce((acc, outfit) => {
-                acc[outfit.id] = outfit;
+                const { id, ...rest } = outfit;
+                acc[id] = rest;
                 return acc;
-            }, {} as Record<string | number, Outfit>);
+            }, {} as Record<string | number, Omit<Outfit, 'id'>>);
             set(outfitsRef, outfitsObject).then(() => {
                  toast({ title: "Outfits updated successfully!" });
             }).catch(error => {
                 toast({ variant: "destructive", title: "Error updating outfits", description: error.message });
             });
         }
+        setOutfits(newOutfits);
     };
 
     const categories = [...new Set(products.map(p => p.category))];

@@ -52,7 +52,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
   
   const handleAdd = () => {
     const newOutfit: Outfit = {
-      id: Math.max(...outfits.map(o => o.id), 0) + 1,
+      id: Date.now().toString(),
       name: formData.name,
       description: formData.description,
       image: formData.image,
