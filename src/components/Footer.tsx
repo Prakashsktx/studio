@@ -1,8 +1,14 @@
 'use client';
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export function Footer() {
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   return (
     <footer className="bg-white border-t border-gray-100 dark:bg-card dark:border-border/50">
@@ -17,7 +23,7 @@ export function Footer() {
             </Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2024 fancybyaifie. All rights reserved.
+            © {currentYear} fancybyaifie. All rights reserved.
           </p>
         </div>
       </div>
