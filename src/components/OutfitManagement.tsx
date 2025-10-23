@@ -15,14 +15,19 @@ import { ScrollArea } from './ui/scroll-area';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
 import { v4 as uuidv4 } from 'uuid';
+import { useDatabase } from '@/firebase';
+import { ref, set, remove, update } from 'firebase/database';
+import { useToast } from '@/hooks/use-toast';
 
 interface OutfitManagementProps {
   outfits: Outfit[];
-  setOutfits: React.Dispatch<React.SetStateAction<Outfit[]>>;
   allProducts: Product[];
 }
 
-export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitManagementProps) {
+export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps) {
+  const db = useDatabase();
+  const { toast } = useToast();
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -50,18 +55,32 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       items: [],
     });
   };
+
+  const itemsToObject = (items: Product[]) => {
+    return items.reduce((acc, item) => {
+        const { id, ...rest } = item;
+        acc[id] = rest;
+        return acc;
+    }, {} as Record<string, Omit<Product, 'id'>>);
+  }
   
   const handleAdd = () => {
-    const newOutfit: Outfit = {
-      id: uuidv4(),
+    if (!db) return;
+    const newOutfitId = uuidv4();
+    const newOutfit: Omit<Outfit, 'id'> = {
       name: formData.name,
       description: formData.description,
       image: formData.image,
-      items: formData.items,
+      items: itemsToObject(formData.items) as any, // Firebase needs an object
     };
-    setOutfits([...outfits, newOutfit]);
-    setIsAddDialogOpen(false);
-    resetForm();
+
+    set(ref(db, `outfits/${newOutfitId}`), newOutfit).then(() => {
+        toast({ title: 'Outfit added successfully!' });
+        setIsAddDialogOpen(false);
+        resetForm();
+    }).catch(e => {
+        toast({ variant: 'destructive', title: 'Error adding outfit', description: e.message });
+    });
   };
 
   const handleEdit = (outfit: Outfit) => {
@@ -70,35 +89,38 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       name: outfit.name,
       description: outfit.description,
       image: outfit.image,
-      items: [...(Array.isArray(outfit.items) ? outfit.items : Object.values(outfit.items || {}))],
+      items: getItemsArray(outfit.items || []),
     });
     setIsEditDialogOpen(true);
   };
   
   const handleUpdate = () => {
-    if (!editingOutfit) return;
-    const updatedOutfits = outfits.map(o =>
-      o.id === editingOutfit.id
-        ? {
-            ...o,
-            id: editingOutfit.id,
-            name: formData.name,
-            description: formData.description,
-            image: formData.image,
-            items: formData.items,
-          }
-        : o
-    );
-    setOutfits(updatedOutfits);
-    setIsEditDialogOpen(false);
-    setEditingOutfit(null);
-    resetForm();
+    if (!editingOutfit || !db) return;
+    const updatedOutfitData = {
+        name: formData.name,
+        description: formData.description,
+        image: formData.image,
+        items: itemsToObject(formData.items),
+    };
+
+    update(ref(db, `outfits/${editingOutfit.id}`), updatedOutfitData).then(() => {
+        toast({ title: 'Outfit updated successfully!' });
+        setIsEditDialogOpen(false);
+        setEditingOutfit(null);
+        resetForm();
+    }).catch(e => {
+        toast({ variant: 'destructive', title: 'Error updating outfit', description: e.message });
+    });
   };
   
   const handleDelete = () => {
-    if (outfitToDelete) {
-      setOutfits(outfits.filter(o => o.id !== outfitToDelete.id));
-      setOutfitToDelete(null);
+    if (outfitToDelete && db) {
+        remove(ref(db, `outfits/${outfitToDelete.id}`)).then(() => {
+            toast({ title: 'Outfit deleted successfully!' });
+            setOutfitToDelete(null);
+        }).catch(e => {
+            toast({ variant: 'destructive', title: 'Error deleting outfit', description: e.message });
+        });
     }
   };
   
@@ -125,7 +147,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       return items;
     }
     if (typeof items === 'object' && items !== null) {
-      return Object.values(items);
+      return Object.keys(items).map(key => ({ id: key, ...(items[key] as Omit<Product, 'id'>) }));
     }
     return [];
   };

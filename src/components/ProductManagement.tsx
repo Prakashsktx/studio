@@ -14,14 +14,19 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
+import { useDatabase } from '@/firebase';
+import { ref, set, remove, update } from 'firebase/database';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface ProductManagementProps {
   products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
 
-export function ProductManagement({ products, setProducts }: ProductManagementProps) {
+export function ProductManagement({ products }: ProductManagementProps) {
+  const db = useDatabase();
+  const { toast } = useToast();
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -53,8 +58,9 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
   };
 
   const handleAdd = () => {
-    const newProduct: Product = {
-      id: uuidv4(),
+    if (!db) return;
+    const newProductId = uuidv4();
+    const newProduct: Omit<Product, 'id'> = {
       name: formData.name,
       price: parseFloat(formData.price),
       image: formData.image,
@@ -64,9 +70,13 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
       affiliateLink: formData.affiliateLink,
     };
 
-    setProducts([...products, newProduct]);
-    setIsAddDialogOpen(false);
-    resetForm();
+    set(ref(db, `products/${newProductId}`), newProduct).then(() => {
+        toast({ title: "Product added successfully!" });
+        setIsAddDialogOpen(false);
+        resetForm();
+    }).catch(e => {
+        toast({ variant: "destructive", title: "Error adding product", description: e.message });
+    });
   };
 
   const handleEdit = (product: Product) => {
@@ -84,33 +94,36 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
   };
 
   const handleUpdate = () => {
-    if (!editingProduct) return;
+    if (!editingProduct || !db) return;
 
-    const updatedProducts = products.map(p =>
-      p.id === editingProduct.id
-        ? {
-            ...p,
-            name: formData.name,
-            price: parseFloat(formData.price),
-            image: formData.image,
-            imageHint: formData.imageHint,
-            category: formData.category,
-            description: formData.description,
-            affiliateLink: formData.affiliateLink,
-          }
-        : p
-    );
+    const updatedProductData = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        image: formData.image,
+        imageHint: formData.imageHint,
+        category: formData.category,
+        description: formData.description,
+        affiliateLink: formData.affiliateLink,
+    };
 
-    setProducts(updatedProducts);
-    setIsEditDialogOpen(false);
-    setEditingProduct(null);
-    resetForm();
+    update(ref(db, `products/${editingProduct.id}`), updatedProductData).then(() => {
+        toast({ title: "Product updated successfully!" });
+        setIsEditDialogOpen(false);
+        setEditingProduct(null);
+        resetForm();
+    }).catch(e => {
+        toast({ variant: "destructive", title: "Error updating product", description: e.message });
+    });
   };
 
   const handleDelete = () => {
-    if (productToDelete) {
-      setProducts(products.filter(p => p.id !== productToDelete.id));
-      setProductToDelete(null);
+    if (productToDelete && db) {
+        remove(ref(db, `products/${productToDelete.id}`)).then(() => {
+            toast({ title: "Product deleted successfully!" });
+            setProductToDelete(null);
+        }).catch(e => {
+            toast({ variant: "destructive", title: "Error deleting product", description: e.message });
+        });
     }
   };
 
@@ -126,7 +139,10 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
             <CardTitle>Product Management</CardTitle>
             <CardDescription>Add, edit, or remove products from your catalog</CardDescription>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
+            if (!isOpen) resetForm();
+            setIsAddDialogOpen(isOpen);
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -162,18 +178,12 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="Tops"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -252,13 +262,15 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
                 <TableRow key={product.id}>
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        sizes="48px"
-                      />
+                      {product.image &&
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      }
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
@@ -311,7 +323,10 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
       </CardContent>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
+        if (!isOpen) resetForm();
+        setIsEditDialogOpen(isOpen)
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
@@ -339,18 +354,11 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
 
             <div className="space-y-2">
               <Label htmlFor="edit-category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="edit-category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              />
             </div>
 
             <div className="space-y-2">
