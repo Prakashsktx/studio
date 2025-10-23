@@ -56,12 +56,12 @@ export const products: Product[] = [
   },
   {
     id: 106,
-    name: "Floral Summer Dress",
-    price: 150.00,
-    category: "Dresses",
+    name: "Leather Tote Bag",
+    price: 180.00,
+    category: "Accessories",
     imageUrl: "https://picsum.photos/seed/product-106/600/800",
-    imageHint: "summer dress",
-    description: "Embrace the sunshine in this beautiful floral dress. The lightweight fabric and flowy silhouette make it perfect for warm weather, while the vibrant print adds a touch of playful elegance. Features an adjustable waist tie for a custom fit."
+    imageHint: "leather tote",
+    description: "A versatile and chic leather tote bag that's perfect for any occasion. Crafted from high-quality leather, it features a spacious interior, multiple pockets, and a timeless design that will complement any outfit."
   },
   {
     id: 107,
