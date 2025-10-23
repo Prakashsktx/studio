@@ -8,7 +8,9 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
-    if (!product.image) {
+    const isValidUrl = product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'));
+
+    if (!isValidUrl) {
         return null;
     }
     
