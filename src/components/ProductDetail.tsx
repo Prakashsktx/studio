@@ -17,7 +17,7 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to products
                 </Button>
-                <div className="grid md:grid-cols-2 gap-12 items-start">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
                     <div className="relative aspect-[3/4] w-full max-w-lg mx-auto rounded-lg overflow-hidden shadow-lg">
                         <Image
                             src={product.imageUrl}
@@ -28,7 +28,7 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                             data-ai-hint={product.imageHint}
                         />
                     </div>
-                    <div className="space-y-6 pt-8 md:pt-4">
+                    <div className="space-y-6">
                         <h1 className="text-4xl font-headline text-primary">{product.name}</h1>
                         <p className="text-3xl text-foreground">${product.price.toFixed(2)}</p>
                         <p className="text-base text-muted-foreground leading-relaxed">{product.description}</p>
