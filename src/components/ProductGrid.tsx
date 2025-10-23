@@ -1,14 +1,15 @@
 'use client';
 
-import { products, Product } from '@/lib/products';
+import { Product } from '@/lib/products';
 import { ProductCard } from './ProductCard';
 
 interface ProductGridProps {
+    products: Product[];
     category?: string | null;
     onProductClick: (product: Product) => void;
 }
 
-export function ProductGrid({ category, onProductClick }: ProductGridProps) {
+export function ProductGrid({ products, category, onProductClick }: ProductGridProps) {
     const filteredProducts = category ? products.filter(p => p.category.toLowerCase() === category.toLowerCase()) : products;
 
     return (

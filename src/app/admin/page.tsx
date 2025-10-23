@@ -8,24 +8,41 @@ import { Label } from "@/components/ui/label";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
 
 export default function AdminPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useAuth();
 
   const handleSignIn = () => {
-    // This is a mock sign-in for demonstration.
-    if (username === 'admin' && password === 'admin123') {
-      router.push('/admin/dashboard');
-    } else {
+    if (!auth) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid username or password.",
+        title: "Error",
+        description: "Firebase auth is not initialized.",
       });
+      return;
     }
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        const user = userCredential.user;
+        router.push('/admin/dashboard');
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: errorMessage,
+        });
+      });
   };
 
   return (
@@ -42,13 +59,14 @@ export default function AdminPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="email">Email</Label>
             <Input 
-              id="username" 
-              placeholder="Enter username" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
+              id="email" 
+              type="email"
+              placeholder="Enter email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
             />
           </div>
           <div className="space-y-2">
@@ -65,7 +83,6 @@ export default function AdminPage() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button className="w-full" onClick={handleSignIn}>Sign In</Button>
-          <p className="text-xs text-muted-foreground">Demo credentials: admin / admin123</p>
         </CardFooter>
       </Card>
     </div>

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { products, Product } from "@/lib/products";
+import { Product } from "@/lib/products";
 import Image from "next/image";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -12,9 +12,10 @@ interface SearchModalProps {
     isOpen: boolean;
     onClose: () => void;
     onProductSelect: (product: Product) => void;
+    products: Product[];
 }
 
-export function SearchModal({ isOpen, onClose, onProductSelect }: SearchModalProps) {
+export function SearchModal({ isOpen, onClose, onProductSelect, products }: SearchModalProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [results, setResults] = useState<Product[]>([]);
 
@@ -37,7 +38,7 @@ export function SearchModal({ isOpen, onClose, onProductSelect }: SearchModalPro
         } else {
             setResults([]);
         }
-    }, [searchTerm]);
+    }, [searchTerm, products]);
 
     const handleSelect = (product: Product) => {
         onProductSelect(product);

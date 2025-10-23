@@ -7,9 +7,10 @@ import { HeroSection } from '@/components/HeroSection';
 import { ProductGrid } from '@/components/ProductGrid';
 import { ProductDetail } from '@/components/ProductDetail';
 import type { Product } from '@/lib/products';
-import { products } from '@/lib/products';
 import { CategoryNav } from '@/components/CategoryNav';
 import { Newsletter } from '@/components/Newsletter';
+import { useDatabase } from '@/firebase';
+import { ref, onValue } from 'firebase/database';
 
 type View = 'home' | 'product';
 
@@ -17,6 +18,29 @@ export default function Home() {
   const [view, setView] = useState<View>('home');
   const [currentCategory, setCurrentCategory] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const db = useDatabase();
+
+  useEffect(() => {
+    if (db) {
+      const productsRef = ref(db, 'products');
+      const unsubscribe = onValue(productsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          // Firebase Realtime Database returns an object, so we convert it to an array
+          const productsArray = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          }));
+          setProducts(productsArray);
+        } else {
+          setProducts([]);
+        }
+      });
+
+      return () => unsubscribe();
+    }
+  }, [db]);
   
   useEffect(() => {
     const handleNavigateOutfit = (event: Event) => {
@@ -35,7 +59,7 @@ export default function Home() {
     return () => {
       window.removeEventListener('navigate-outfit', handleNavigateOutfit);
     };
-  }, []);
+  }, [products]);
   
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
@@ -63,6 +87,7 @@ export default function Home() {
                 onSelectCategory={setCurrentCategory}
             />
             <ProductGrid 
+                products={products}
                 category={currentCategory}
                 onProductClick={handleSelectProduct} 
             />
@@ -72,7 +97,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
-      <Header onNavigate={handleBackToHome} onProductSelect={handleSelectProduct} />
+      <Header onNavigate={handleBackToHome} onProductSelect={handleSelectProduct} products={products} />
       <main className="flex-grow">
         {renderContent()}
       </main>

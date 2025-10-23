@@ -12,9 +12,10 @@ import { Product } from '@/lib/products';
 interface HeaderProps {
   onNavigate: (category: string) => void;
   onProductSelect: (product: Product) => void;
+  products: Product[];
 }
 
-export function Header({ onNavigate, onProductSelect }: HeaderProps) {
+export function Header({ onNavigate, onProductSelect, products }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -127,6 +128,7 @@ export function Header({ onNavigate, onProductSelect }: HeaderProps) {
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onProductSelect={onProductSelect}
+        products={products}
       />
     </>
   );

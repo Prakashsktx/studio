@@ -8,13 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from 'next/navigation';
 import { ProductManagement } from '@/components/ProductManagement';
 import { OutfitManagement } from '@/components/OutfitManagement';
-import { products as initialProducts, Product } from '@/lib/products';
-import { outfits as initialOutfits, Outfit } from '@/lib/outfits';
+import { Product } from '@/lib/products';
+import { Outfit } from '@/lib/outfits';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
-    const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [outfits, setOutfits] = useState<Outfit[]>(initialOutfits);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [outfits, setOutfits] = useState<Outfit[]>([]);
     
     const categories = [...new Set(products.map(p => p.category))];
 
