@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSignIn = () => {
     // This is a mock sign-in for demonstration.
@@ -20,8 +22,7 @@ export default function AdminPage() {
         title: "Login Successful",
         description: "Welcome, Admin! Redirecting to dashboard...",
       });
-      // In a real app, you would redirect to an admin dashboard here.
-      // e.g., router.push('/admin/dashboard');
+      router.push('/admin/dashboard');
     } else {
       toast({
         variant: "destructive",
