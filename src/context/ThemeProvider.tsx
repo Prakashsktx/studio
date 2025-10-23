@@ -9,6 +9,9 @@ type ThemeProviderProps = {
   children: React.ReactNode
   defaultTheme?: Theme
   storageKey?: string
+  attribute?: string;
+  enableSystem?: boolean;
+  disableTransitionOnChange?: boolean;
 }
 
 type ThemeProviderState = {
@@ -18,7 +21,7 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: 'dark',
+  theme: 'light',
   setTheme: () => null,
   toggleTheme: () => null,
 }
@@ -27,7 +30,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'dark',
+  defaultTheme = 'light',
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {
