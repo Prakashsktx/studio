@@ -1,7 +1,7 @@
 import { Product } from '@/lib/products';
 
 export interface Outfit {
-  id: number | string;
+  id: string;
   name: string;
   description: string;
   image: string;

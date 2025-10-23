@@ -13,6 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/lib/products';
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface ProductManagementProps {
   products: Product[];
@@ -52,7 +54,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
 
   const handleAdd = () => {
     const newProduct: Product = {
-      id: Math.max(...products.map(p => p.id as number), 0) + 1,
+      id: uuidv4(),
       name: formData.name,
       price: parseFloat(formData.price),
       image: formData.image,
