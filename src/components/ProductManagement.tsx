@@ -33,6 +33,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
     imageHint: '',
     category: '',
     description: '',
+    affiliateLink: '',
   });
 
   const categories = [...new Set(products.map(p => p.category))];
@@ -45,6 +46,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
       imageHint: '',
       category: '',
       description: '',
+      affiliateLink: '',
     });
   };
 
@@ -57,6 +59,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
       imageHint: formData.imageHint,
       category: formData.category,
       description: formData.description,
+      affiliateLink: formData.affiliateLink,
     };
 
     setProducts([...products, newProduct]);
@@ -73,6 +76,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
       imageHint: product.imageHint,
       category: product.category,
       description: product.description,
+      affiliateLink: product.affiliateLink || '',
     });
     setIsEditDialogOpen(true);
   };
@@ -90,6 +94,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
             imageHint: formData.imageHint,
             category: formData.category,
             description: formData.description,
+            affiliateLink: formData.affiliateLink,
           }
         : p
     );
@@ -190,12 +195,12 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="imageHint">Image AI Hint</Label>
+                  <Label htmlFor="affiliateLink">Affiliate Link</Label>
                   <Input
-                    id="imageHint"
-                    value={formData.imageHint}
-                    onChange={(e) => setFormData({ ...formData, imageHint: e.target.value })}
-                    placeholder="e.g. linen shirt"
+                    id="affiliateLink"
+                    value={formData.affiliateLink}
+                    onChange={(e) => setFormData({ ...formData, affiliateLink: e.target.value })}
+                    placeholder="https://amazon.com/..."
                   />
                 </div>
 
@@ -365,11 +370,11 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
             </div>
             
             <div className="space-y-2">
-                <Label htmlFor="edit-imageHint">Image AI Hint</Label>
+                <Label htmlFor="edit-affiliateLink">Affiliate Link</Label>
                 <Input
-                id="edit-imageHint"
-                value={formData.imageHint}
-                onChange={(e) => setFormData({ ...formData, imageHint: e.target.value })}
+                id="edit-affiliateLink"
+                value={formData.affiliateLink}
+                onChange={(e) => setFormData({ ...formData, affiliateLink: e.target.value })}
                 />
             </div>
 
