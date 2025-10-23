@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import type { Product } from '@/lib/products';
 import { Card, CardContent } from './ui/card';
@@ -23,7 +24,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
                             src={product.image}
                             alt={product.name}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-contain group-hover:scale-105 transition-transform duration-300"
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                             data-ai-hint={product.imageHint}
                         />
