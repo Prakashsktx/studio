@@ -46,11 +46,7 @@ export default function Home() {
           const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => {
             const outfitData = data[key];
             
-            // Firebase returns `items` as an object, so we convert it to an array
-            const itemsArray = outfitData.items ? Object.keys(outfitData.items).map(itemKey => ({
-                id: itemKey,
-                ...outfitData.items[itemKey]
-            })) : [];
+            const itemsArray = outfitData.items ? Object.values(outfitData.items) : [];
 
             return {
               id: key,
