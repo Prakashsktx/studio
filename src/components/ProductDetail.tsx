@@ -32,9 +32,11 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                         <h1 className="text-4xl font-headline text-primary">{product.name}</h1>
                         <p className="text-3xl text-foreground">${product.price.toFixed(2)}</p>
                         <p className="text-base text-muted-foreground leading-relaxed">{product.description}</p>
-                        <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" asChild>
-                           <Link href={"#"} target="_blank">View Link</Link>
-                        </Button>
+                        {product.affiliateLink && (
+                            <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" asChild>
+                               <Link href={product.affiliateLink} target="_blank">View Link</Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
