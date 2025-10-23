@@ -28,7 +28,7 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                             data-ai-hint={product.imageHint}
                         />
                     </div>
-                    <div className="space-y-6 pt-4">
+                    <div className="space-y-6 pt-8 md:pt-4">
                         <h1 className="text-4xl font-headline text-primary">{product.name}</h1>
                         <p className="text-3xl text-foreground">${product.price.toFixed(2)}</p>
                         <p className="text-base text-muted-foreground leading-relaxed">{product.description}</p>
