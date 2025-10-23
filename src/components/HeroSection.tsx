@@ -27,7 +27,7 @@ export function HeroSection() {
             <div className="space-y-4">
               <Button 
                 size="lg"
-                onClick={() => window.dispatchEvent(new CustomEvent('navigate-outfit', { detail: 103 }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('show-outfits'))}
                 className="bg-primary text-primary-foreground px-8 py-3 hover:bg-primary/90 transition-colors"
               >
                 Shop My Outfit

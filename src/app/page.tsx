@@ -5,29 +5,31 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { HeroSection } from '@/components/HeroSection';
 import { ProductGrid } from '@/components/ProductGrid';
+import { OutfitGrid } from '@/components/OutfitGrid';
 import { ProductDetail } from '@/components/ProductDetail';
 import type { Product } from '@/lib/products';
 import { CategoryNav } from '@/components/CategoryNav';
 import { Newsletter } from '@/components/Newsletter';
 import { useDatabase } from '@/firebase';
 import { ref, onValue } from 'firebase/database';
+import { Outfit } from '@/lib/outfits';
 
-type View = 'home' | 'product';
+type View = 'home' | 'product' | 'outfits';
 
 export default function Home() {
   const [view, setView] = useState<View>('home');
   const [currentCategory, setCurrentCategory] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [outfits, setOutfits] = useState<Outfit[]>([]);
   const db = useDatabase();
 
   useEffect(() => {
     if (db) {
       const productsRef = ref(db, 'products');
-      const unsubscribe = onValue(productsRef, (snapshot) => {
+      const unsubscribeProducts = onValue(productsRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          // Firebase Realtime Database returns an object, so we convert it to an array
           const productsArray = Object.keys(data).map(key => ({
             id: key,
             ...data[key]
@@ -38,7 +40,20 @@ export default function Home() {
         }
       });
 
-      return () => unsubscribe();
+      const outfitsRef = ref(db, 'outfits');
+        const unsubscribeOutfits = onValue(outfitsRef, (snapshot) => {
+            const data = snapshot.val();
+            const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            })) : [];
+            setOutfits(outfitsArray);
+        });
+
+      return () => {
+        unsubscribeProducts();
+        unsubscribeOutfits();
+      };
     }
   }, [db]);
   
@@ -53,11 +68,18 @@ export default function Home() {
         window.scrollTo(0, 0);
       }
     };
+
+    const handleShowOutfits = () => {
+        setView('outfits');
+        window.scrollTo(0, 0);
+    }
     
     window.addEventListener('navigate-outfit', handleNavigateOutfit);
+    window.addEventListener('show-outfits', handleShowOutfits);
 
     return () => {
       window.removeEventListener('navigate-outfit', handleNavigateOutfit);
+      window.removeEventListener('show-outfits', handleShowOutfits);
     };
   }, [products]);
   
@@ -72,11 +94,19 @@ export default function Home() {
     setView('home');
   }
 
+  const handleSelectOutfit = (outfit: Outfit) => {
+    // For now, we'll just log this. In the future you could navigate to an outfit detail page.
+    console.log('Selected outfit:', outfit);
+  }
+
   const categories = [...new Set(products.map(p => p.category))];
 
   const renderContent = () => {
     if (view === 'product' && selectedProduct) {
         return <ProductDetail product={selectedProduct} onBack={handleBackToHome} />;
+    }
+    if (view === 'outfits') {
+        return <OutfitGrid outfits={outfits} onOutfitClick={handleSelectOutfit} onBack={handleBackToHome}/>;
     }
     return (
         <>
