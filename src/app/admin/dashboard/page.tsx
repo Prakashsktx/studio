@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart, Package, LayoutGrid, Users, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,12 +10,73 @@ import { ProductManagement } from '@/components/ProductManagement';
 import { OutfitManagement } from '@/components/OutfitManagement';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
+import { useDatabase } from '@/firebase';
+import { ref, onValue, set } from 'firebase/database';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [outfits, setOutfits] = useState<Outfit[]>([]);
+    const db = useDatabase();
+    const { toast } = useToast();
     
+    useEffect(() => {
+        if (!db) return;
+
+        const productsRef = ref(db, 'products');
+        const outfitsRef = ref(db, 'outfits');
+
+        const unsubscribeProducts = onValue(productsRef, (snapshot) => {
+            const data = snapshot.val();
+            const productsArray = data ? Object.values(data) : [];
+            setProducts(productsArray);
+        });
+
+        const unsubscribeOutfits = onValue(outfitsRef, (snapshot) => {
+            const data = snapshot.val();
+            const outfitsArray = data ? Object.values(data) : [];
+            setOutfits(outfitsArray);
+        });
+
+        return () => {
+            unsubscribeProducts();
+            unsubscribeOutfits();
+        };
+    }, [db]);
+
+    const handleSetProducts = (newProducts: Product[]) => {
+        setProducts(newProducts);
+        if (db) {
+            const productsRef = ref(db, 'products');
+            const productsObject = newProducts.reduce((acc, product) => {
+                acc[product.id] = product;
+                return acc;
+            }, {} as Record<string | number, Product>);
+            set(productsRef, productsObject).then(() => {
+                toast({ title: "Products updated successfully!" });
+            }).catch(error => {
+                toast({ variant: "destructive", title: "Error updating products", description: error.message });
+            });
+        }
+    };
+    
+    const handleSetOutfits = (newOutfits: Outfit[]) => {
+        setOutfits(newOutfits);
+        if (db) {
+            const outfitsRef = ref(db, 'outfits');
+             const outfitsObject = newOutfits.reduce((acc, outfit) => {
+                acc[outfit.id] = outfit;
+                return acc;
+            }, {} as Record<string | number, Outfit>);
+            set(outfitsRef, outfitsObject).then(() => {
+                 toast({ title: "Outfits updated successfully!" });
+            }).catch(error => {
+                toast({ variant: "destructive", title: "Error updating outfits", description: error.message });
+            });
+        }
+    };
+
     const categories = [...new Set(products.map(p => p.category))];
 
     const stats = [
@@ -83,12 +144,12 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="products">
-                           <ProductManagement products={products} setProducts={setProducts} />
+                           <ProductManagement products={products} setProducts={handleSetProducts} />
                         </TabsContent>
                          <TabsContent value="outfits">
                            <OutfitManagement 
                              outfits={outfits} 
-                             setOutfits={setOutfits} 
+                             setOutfits={handleSetOutfits} 
                              allProducts={products}
                            />
                         </TabsContent>
