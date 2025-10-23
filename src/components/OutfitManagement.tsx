@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Plus, Pencil, Trash2, Eye, X } from 'lucide-react';
 import Image from 'next/image';
@@ -26,6 +27,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null);
   const [viewingOutfit, setViewingOutfit] = useState<Outfit | null>(null);
+  const [outfitToDelete, setOutfitToDelete] = useState<Outfit | null>(null);
   
   const [formData, setFormData] = useState<{
     name: string;
@@ -91,9 +93,10 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     resetForm();
   };
   
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this outfit?')) {
-      setOutfits(outfits.filter(o => o.id !== id));
+  const handleDelete = () => {
+    if (outfitToDelete) {
+      setOutfits(outfits.filter(o => o.id !== outfitToDelete.id));
+      setOutfitToDelete(null);
     }
   };
   
@@ -321,13 +324,31 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        onClick={() => handleDelete(outfit.id)}
-                        variant="destructive"
-                        size="icon" className="h-8 w-8"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setOutfitToDelete(outfit)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete this
+                                outfit.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setOutfitToDelete(null)}>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>

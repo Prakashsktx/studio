@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
@@ -23,6 +24,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -98,9 +100,10 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
     resetForm();
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(p => p.id !== id));
+  const handleDelete = () => {
+    if (productToDelete) {
+      setProducts(products.filter(p => p.id !== productToDelete.id));
+      setProductToDelete(null);
     }
   };
 
@@ -265,15 +268,32 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Edit</span>
                       </Button>
-                      <Button
-                        onClick={() => handleDelete(product.id)}
-                        variant="destructive"
-                        size="icon"
-                         className="h-8 w-8"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setProductToDelete(product)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the
+                                product.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
