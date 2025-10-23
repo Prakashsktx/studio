@@ -9,12 +9,14 @@ interface OutfitCardProps {
 
 export function OutfitCard({ outfit, onClick }: OutfitCardProps) {
     const isValidUrl = outfit.image && (outfit.image.startsWith('http://') || outfit.image.startsWith('https://'));
+    const hasItems = outfit.items && Array.isArray(outfit.items);
 
     if (!isValidUrl) {
+        // Don't render the card if the image URL is invalid
         return null;
     }
 
-    const totalPrice = outfit.items.reduce((acc, item) => acc + item.price, 0);
+    const totalPrice = hasItems ? outfit.items.reduce((acc, item) => acc + (item.price || 0), 0) : 0;
     
     return (
         <button onClick={onClick} className="group text-left w-full h-full flex flex-col">
@@ -33,8 +35,12 @@ export function OutfitCard({ outfit, onClick }: OutfitCardProps) {
             </Card>
             <div className="mt-4">
                 <h3 className="text-sm text-foreground group-hover:text-primary transition-colors">{outfit.name}</h3>
-                <p className="mt-1 text-lg font-medium text-foreground">${totalPrice.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">{outfit.items.length} items</p>
+                {hasItems && (
+                    <>
+                        <p className="mt-1 text-lg font-medium text-foreground">${totalPrice.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{outfit.items.length} {outfit.items.length === 1 ? 'item' : 'items'}</p>
+                    </>
+                )}
             </div>
         </button>
     );
