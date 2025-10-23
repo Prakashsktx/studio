@@ -14,7 +14,6 @@ import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
-import { Checkbox } from './ui/checkbox';
 
 interface OutfitManagementProps {
   outfits: Outfit[];
@@ -42,8 +41,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     items: [],
   });
 
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
-
   const resetForm = () => {
     setFormData({
       name: '',
@@ -51,7 +48,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       image: '',
       items: [],
     });
-    setSelectedProducts([]);
   };
   
   const handleAdd = () => {
@@ -109,37 +105,17 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     setIsViewDialogOpen(true);
   };
 
-  const handleToggleProductInOutfit = (product: Product) => {
+  const handleToggleProductInOutfit = (product: Product, action: 'add' | 'remove') => {
     setFormData(prev => {
         const isAlreadyIn = prev.items.some(item => item.id === product.id);
-        if (isAlreadyIn) {
-            return { ...prev, items: prev.items.filter(item => item.id !== product.id) };
-        } else {
+        if (action === 'add' && !isAlreadyIn) {
             return { ...prev, items: [...prev.items, product] };
         }
-    });
-  };
-
-  const handleToggleSelectedProduct = (product: Product) => {
-    setSelectedProducts(prev => {
-        const isSelected = prev.some(p => p.id === product.id);
-        if (isSelected) {
-            return prev.filter(p => p.id !== product.id);
-        } else {
-            return [...prev, product];
+        if (action === 'remove' && isAlreadyIn) {
+             return { ...prev, items: prev.items.filter(item => item.id !== product.id) };
         }
+        return prev;
     });
-  };
-
-  const addSelectedProductsToOutfit = () => {
-    setFormData(prev => {
-        const newItems = selectedProducts.filter(p => !prev.items.some(item => item.id === p.id));
-        return {
-            ...prev,
-            items: [...prev.items, ...newItems]
-        };
-    });
-    setSelectedProducts([]);
   };
 
   const getTotalPrice = (items: Product[]) => {
@@ -164,7 +140,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                 Add Outfit
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-6xl max-h-[90vh]">
+            <DialogContent className="sm:max-w-4xl max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>Add New Outfit</DialogTitle>
                 <DialogDescription>Create a new curated outfit collection</DialogDescription>
@@ -227,7 +203,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                             </div>
                             <p className="text-sm flex-shrink-0">${item.price.toFixed(2)}</p>
                             <Button
-                              onClick={() => handleToggleProductInOutfit(item)}
+                              onClick={() => handleToggleProductInOutfit(item, 'remove')}
                               variant="ghost"
                               size="icon"
                               className="flex-shrink-0 h-8 w-8"
@@ -246,32 +222,19 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                   
                   <div className="space-y-3">
                     <Label>Add Products to Outfit</Label>
-                     <div className="flex items-center gap-2 mb-2">
-                        <Button onClick={addSelectedProductsToOutfit} disabled={selectedProducts.length === 0}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Selected ({selectedProducts.length})
-                        </Button>
-                    </div>
                     <div className="border rounded-lg p-3 bg-muted/50">
                       <ScrollArea className="h-64">
                         <div className="space-y-2 pr-4">
                           {allProducts.map((product) => {
                             const isAdded = formData.items.some(item => item.id === product.id);
-                            const isSelected = selectedProducts.some(p => p.id === product.id);
                             return (
                               <div
                                 key={product.id}
                                 className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${
                                   isAdded ? 'opacity-50 pointer-events-none' : ''
-                                } ${isSelected ? 'ring-2 ring-primary' : ''}`}
-                                onClick={() => !isAdded && handleToggleSelectedProduct(product)}
+                                }`}
+                                onClick={() => !isAdded && handleToggleProductInOutfit(product, 'add')}
                               >
-                                <Checkbox
-                                    checked={isSelected}
-                                    onCheckedChange={() => !isAdded && handleToggleSelectedProduct(product)}
-                                    disabled={isAdded}
-                                    aria-label="Select product"
-                                />
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                                   <Image
                                     src={product.image}
@@ -395,7 +358,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
         if (!isOpen) resetForm();
         setIsEditDialogOpen(isOpen);
       }}>
-        <DialogContent className="sm:max-w-6xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Edit Outfit</DialogTitle>
             <DialogDescription>Update the outfit details and manage items</DialogDescription>
@@ -455,7 +418,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                             </div>
                             <p className="text-sm flex-shrink-0">${item.price.toFixed(2)}</p>
                             <Button
-                              onClick={() => handleToggleProductInOutfit(item)}
+                              onClick={() => handleToggleProductInOutfit(item, 'remove')}
                               variant="ghost"
                               size="icon"
                               className="flex-shrink-0 h-8 w-8"
@@ -474,32 +437,19 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                   
                 <div className="space-y-3">
                     <Label>Add Products to Outfit</Label>
-                     <div className="flex items-center gap-2 mb-2">
-                        <Button onClick={addSelectedProductsToOutfit} disabled={selectedProducts.length === 0}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Selected ({selectedProducts.length})
-                        </Button>
-                    </div>
                     <div className="border rounded-lg p-3 bg-muted/50">
                       <ScrollArea className="h-64">
                         <div className="space-y-2 pr-4">
                           {allProducts.map((product) => {
                             const isAdded = formData.items.some(item => item.id === product.id);
-                            const isSelected = selectedProducts.some(p => p.id === product.id);
                             return (
                               <div
                                 key={product.id}
                                 className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${
                                   isAdded ? 'opacity-50 pointer-events-none' : ''
-                                } ${isSelected ? 'ring-2 ring-primary' : ''}`}
-                                onClick={() => !isAdded && handleToggleSelectedProduct(product)}
+                                }`}
+                                onClick={() => !isAdded && handleToggleProductInOutfit(product, 'add')}
                               >
-                                <Checkbox
-                                    checked={isSelected}
-                                    onCheckedChange={() => !isAdded && handleToggleSelectedProduct(product)}
-                                    disabled={isAdded}
-                                    aria-label="Select product"
-                                />
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                                   <Image
                                     src={product.image}
