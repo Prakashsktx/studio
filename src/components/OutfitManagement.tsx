@@ -11,48 +11,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Plus, Pencil, Trash2, Eye, X } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
-import { products as allProducts, Product } from '@/lib/products';
+import { Product } from '@/lib/products';
+import { Outfit } from '@/lib/outfits';
 
-interface OutfitItem extends Product {}
-
-interface Outfit {
-  id: number;
-  name: string;
-  description: string;
-  imageUrl: string;
-  items: OutfitItem[];
+interface OutfitManagementProps {
+  outfits: Outfit[];
+  setOutfits: React.Dispatch<React.SetStateAction<Outfit[]>>;
+  allProducts: Product[];
 }
 
-const initialOutfits: Outfit[] = [
-    {
-        id: 1,
-        name: "Casual Weekend",
-        description: "A relaxed and stylish look for your weekend outings.",
-        imageUrl: "https://picsum.photos/seed/outfit-1/600/800",
-        items: allProducts.filter(p => [104, 101, 105].includes(p.id)),
-    },
-    {
-        id: 2,
-        name: "Office Chic",
-        description: "A polished and professional outfit for the modern workplace.",
-        imageUrl: "https://picsum.photos/seed/outfit-2/600/800",
-        items: allProducts.filter(p => [103, 102, 107].includes(p.id)),
-    }
-]
-
-export function OutfitManagement() {
-  const [outfits, setOutfits] = useState<Outfit[]>(initialOutfits);
+export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitManagementProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null);
   const [viewingOutfit, setViewingOutfit] = useState<Outfit | null>(null);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    imageUrl: string;
+    items: Product[];
+  }>({
     name: '',
     description: '',
     imageUrl: '',
-    items: [] as Product[],
+    items: [],
   });
 
   const resetForm = () => {

@@ -8,14 +8,17 @@ import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Badge } from './ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { products as allProducts, Product } from '@/lib/products';
+import { Product } from '@/lib/products';
 
-export function ProductManagement() {
-  const [products, setProducts] = useState<Product[]>(allProducts);
+interface ProductManagementProps {
+  products: Product[];
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+}
+
+export function ProductManagement({ products, setProducts }: ProductManagementProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -30,7 +33,7 @@ export function ProductManagement() {
     description: '',
   });
 
-  const categories = [...new Set(allProducts.map(p => p.category))];
+  const categories = [...new Set(products.map(p => p.category))];
 
   const resetForm = () => {
     setFormData({

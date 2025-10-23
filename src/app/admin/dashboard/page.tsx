@@ -1,21 +1,27 @@
 'use client';
 
-import { BarChart, Box, ClipboardList, LogOut, Users, HelpCircle, Package, LayoutGrid } from 'lucide-react';
+import { useState } from 'react';
+import { BarChart, Package, LayoutGrid, Users, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProductManagement } from '@/components/ProductManagement';
 import { OutfitManagement } from '@/components/OutfitManagement';
+import { products as initialProducts, Product } from '@/lib/products';
+import { outfits as initialOutfits, Outfit } from '@/lib/outfits';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
+    const [products, setProducts] = useState<Product[]>(initialProducts);
+    const [outfits, setOutfits] = useState<Outfit[]>(initialOutfits);
+    
+    const categories = [...new Set(products.map(p => p.category))];
 
     const stats = [
-        { title: 'Total Products', value: '48', description: 'Across all categories', icon: Package },
-        { title: 'Total Outfits', value: '8', description: 'Curated collections', icon: LayoutGrid },
-        { title: 'Categories', value: '6', description: 'Active categories', icon: BarChart },
+        { title: 'Total Products', value: products.length.toString(), description: 'Across all categories', icon: Package },
+        { title: 'Total Outfits', value: outfits.length.toString(), description: 'Curated collections', icon: LayoutGrid },
+        { title: 'Categories', value: categories.length.toString(), description: 'Active categories', icon: BarChart },
         { title: 'Newsletter', value: '-', description: 'Subscribers (mock)', icon: Users },
     ]
 
@@ -77,10 +83,14 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="products">
-                           <ProductManagement />
+                           <ProductManagement products={products} setProducts={setProducts} />
                         </TabsContent>
                          <TabsContent value="outfits">
-                           <OutfitManagement />
+                           <OutfitManagement 
+                             outfits={outfits} 
+                             setOutfits={setOutfits} 
+                             allProducts={products}
+                           />
                         </TabsContent>
                     </Tabs>
                 </div>
