@@ -8,7 +8,6 @@ import { ProductGrid } from '@/components/ProductGrid';
 import { ProductDetail } from '@/components/ProductDetail';
 import type { Product } from '@/lib/products';
 import { products } from '@/lib/products';
-import { useToast } from "@/hooks/use-toast"
 import { CategoryNav } from '@/components/CategoryNav';
 
 type View = 'home' | 'product';
@@ -17,16 +16,8 @@ export default function Home() {
   const [view, setView] = useState<View>('home');
   const [currentCategory, setCurrentCategory] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const { toast } = useToast();
-
+  
   useEffect(() => {
-    const handleShowAdmin = () => {
-      toast({
-        title: "Admin Access",
-        description: "Admin panel access triggered. This would open a CMS in a real application.",
-      });
-    };
-
     const handleNavigateOutfit = (event: Event) => {
       const customEvent = event as CustomEvent;
       const productId = customEvent.detail;
@@ -38,14 +29,12 @@ export default function Home() {
       }
     };
     
-    window.addEventListener('show-admin', handleShowAdmin);
     window.addEventListener('navigate-outfit', handleNavigateOutfit);
 
     return () => {
-      window.removeEventListener('show-admin', handleShowAdmin);
       window.removeEventListener('navigate-outfit', handleNavigateOutfit);
     };
-  }, [toast]);
+  }, []);
   
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
