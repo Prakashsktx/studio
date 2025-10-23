@@ -75,7 +75,7 @@ export function SearchModal({ isOpen, onClose, onProductSelect, products }: Sear
                                     >
                                         <div className="relative w-16 h-20 rounded-md overflow-hidden bg-muted flex-shrink-0">
                                             <Image
-                                                src={product.imageUrl}
+                                                src={product.image}
                                                 alt={product.name}
                                                 fill
                                                 className="object-cover"

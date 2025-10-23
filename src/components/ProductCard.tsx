@@ -8,13 +8,17 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
+    if (!product.image) {
+        return null;
+    }
+    
     return (
         <button onClick={onClick} className="group text-left w-full h-full flex flex-col">
             <Card className="overflow-hidden rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 border-none flex-grow flex flex-col bg-card">
                 <CardContent className="p-0 flex-grow flex flex-col">
                     <div className="aspect-[3/4] relative w-full">
                         <Image
-                            src={product.imageUrl}
+                            src={product.image}
                             alt={product.name}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"

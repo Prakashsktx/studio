@@ -29,7 +29,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    imageUrl: '',
+    image: '',
     imageHint: '',
     category: '',
     description: '',
@@ -41,7 +41,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
     setFormData({
       name: '',
       price: '',
-      imageUrl: '',
+      image: '',
       imageHint: '',
       category: '',
       description: '',
@@ -50,10 +50,10 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
 
   const handleAdd = () => {
     const newProduct: Product = {
-      id: Math.max(...products.map(p => p.id), 0) + 1,
+      id: Math.max(...products.map(p => p.id as number), 0) + 1,
       name: formData.name,
       price: parseFloat(formData.price),
-      imageUrl: formData.imageUrl,
+      image: formData.image,
       imageHint: formData.imageHint,
       category: formData.category,
       description: formData.description,
@@ -69,7 +69,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
     setFormData({
       name: product.name,
       price: product.price.toString(),
-      imageUrl: product.imageUrl,
+      image: product.image,
       imageHint: product.imageHint,
       category: product.category,
       description: product.description,
@@ -86,7 +86,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
             ...p,
             name: formData.name,
             price: parseFloat(formData.price),
-            imageUrl: formData.imageUrl,
+            image: formData.image,
             imageHint: formData.imageHint,
             category: formData.category,
             description: formData.description,
@@ -180,11 +180,11 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Label htmlFor="image">Image URL</Label>
                   <Input
-                    id="imageUrl"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    id="image"
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                     placeholder="https://picsum.photos/seed/..."
                   />
                 </div>
@@ -246,7 +246,7 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
                       <Image
-                        src={product.imageUrl}
+                        src={product.image}
                         alt={product.name}
                         fill
                         className="object-cover"
@@ -356,11 +356,11 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-imageUrl">Image URL</Label>
+              <Label htmlFor="edit-image">Image URL</Label>
               <Input
-                id="edit-imageUrl"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                id="edit-image"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               />
             </div>
             

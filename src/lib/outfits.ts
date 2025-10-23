@@ -4,7 +4,7 @@ export interface Outfit {
   id: number;
   name: string;
   description: string;
-  imageUrl: string;
+  image: string;
   items: Product[];
 }
 

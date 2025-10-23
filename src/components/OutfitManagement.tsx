@@ -32,12 +32,12 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
   const [formData, setFormData] = useState<{
     name: string;
     description: string;
-    imageUrl: string;
+    image: string;
     items: Product[];
   }>({
     name: '',
     description: '',
-    imageUrl: '',
+    image: '',
     items: [],
   });
 
@@ -45,7 +45,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     setFormData({
       name: '',
       description: '',
-      imageUrl: '',
+      image: '',
       items: [],
     });
   };
@@ -55,7 +55,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       id: Math.max(...outfits.map(o => o.id), 0) + 1,
       name: formData.name,
       description: formData.description,
-      imageUrl: formData.imageUrl,
+      image: formData.image,
       items: formData.items,
     };
     setOutfits([...outfits, newOutfit]);
@@ -68,7 +68,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     setFormData({
       name: outfit.name,
       description: outfit.description,
-      imageUrl: outfit.imageUrl,
+      image: outfit.image,
       items: [...outfit.items],
     });
     setIsEditDialogOpen(true);
@@ -82,7 +82,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
             ...o,
             name: formData.name,
             description: formData.description,
-            imageUrl: formData.imageUrl,
+            image: formData.image,
             items: formData.items,
           }
         : o
@@ -166,11 +166,11 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="outfit-imageUrl">Main Image URL</Label>
+                    <Label htmlFor="outfit-image">Main Image URL</Label>
                     <Input
-                      id="outfit-imageUrl"
-                      value={formData.imageUrl}
-                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                      id="outfit-image"
+                      value={formData.image}
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                       placeholder="https://picsum.photos/seed/..."
                     />
                   </div>
@@ -188,7 +188,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                           <div key={index} className="flex items-center gap-3 p-2 bg-background rounded border">
                             <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                               <Image
-                                src={item.imageUrl}
+                                src={item.image}
                                 alt={item.name}
                                 fill
                                 sizes="48px"
@@ -235,7 +235,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                               >
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                                   <Image
-                                    src={product.imageUrl}
+                                    src={product.image}
                                     alt={product.name}
                                     fill
                                     sizes="48px"
@@ -297,7 +297,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
                       <Image
-                        src={outfit.imageUrl}
+                        src={outfit.image}
                         alt={outfit.name}
                         fill
                         sizes="48px"
@@ -389,11 +389,11 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-outfit-imageUrl">Main Image URL</Label>
+                <Label htmlFor="edit-outfit-image">Main Image URL</Label>
                 <Input
-                  id="edit-outfit-imageUrl"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  id="edit-outfit-image"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                 />
               </div>
 
@@ -410,7 +410,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                           <div key={index} className="flex items-center gap-3 p-2 bg-background rounded border">
                             <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                               <Image
-                                src={item.imageUrl}
+                                src={item.image}
                                 alt={item.name}
                                 fill
                                 sizes="48px"
@@ -457,7 +457,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                               >
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                                   <Image
-                                    src={product.imageUrl}
+                                    src={product.image}
                                     alt={product.name}
                                     fill
                                     sizes="48px"
@@ -512,7 +512,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
               <div className="space-y-4">
                  <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-muted">
                   <Image
-                    src={viewingOutfit?.imageUrl || ''}
+                    src={viewingOutfit?.image || ''}
                     alt={viewingOutfit?.name || ''}
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -535,7 +535,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                       <div key={index} className="flex items-center gap-4 p-3 border rounded-lg bg-background hover:shadow-sm transition-shadow">
                         <div className="w-16 h-20 relative rounded overflow-hidden bg-muted flex-shrink-0">
                           <Image
-                            src={item.imageUrl}
+                            src={item.image}
                             alt={item.name}
                             fill
                             sizes="64px"
