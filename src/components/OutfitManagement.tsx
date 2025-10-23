@@ -140,7 +140,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                 Add Outfit
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+            <DialogContent className="sm:max-w-7xl max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>Add New Outfit</DialogTitle>
                 <DialogDescription>Create a new curated outfit collection</DialogDescription>
@@ -358,7 +358,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
         if (!isOpen) resetForm();
         setIsEditDialogOpen(isOpen);
       }}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh]">
+        <DialogContent className="sm:max-w-7xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Edit Outfit</DialogTitle>
             <DialogDescription>Update the outfit details and manage items</DialogDescription>
