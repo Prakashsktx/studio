@@ -9,6 +9,7 @@ import { ProductDetail } from '@/components/ProductDetail';
 import type { Product } from '@/lib/products';
 import { products } from '@/lib/products';
 import { CategoryNav } from '@/components/CategoryNav';
+import { Newsletter } from '@/components/Newsletter';
 
 type View = 'home' | 'product';
 
@@ -75,6 +76,7 @@ export default function Home() {
       <main className="flex-grow">
         {renderContent()}
       </main>
+      <Newsletter />
       <Footer />
     </div>
   );
