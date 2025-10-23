@@ -18,10 +18,6 @@ export default function AdminPage() {
   const handleSignIn = () => {
     // This is a mock sign-in for demonstration.
     if (username === 'admin' && password === 'admin123') {
-      toast({
-        title: "Login Successful",
-        description: "Welcome, Admin! Redirecting to dashboard...",
-      });
       router.push('/admin/dashboard');
     } else {
       toast({
