@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ProductManagement } from '@/components/ProductManagement';
+import { OutfitManagement } from '@/components/OutfitManagement';
 
 export default function AdminDashboardPage() {
     const router = useRouter();
@@ -75,10 +77,10 @@ export default function AdminDashboardPage() {
                             </Card>
                         </TabsContent>
                         <TabsContent value="products">
-                           <div className="text-center py-16 text-muted-foreground">Product management coming soon.</div>
+                           <ProductManagement />
                         </TabsContent>
                          <TabsContent value="outfits">
-                           <div className="text-center py-16 text-muted-foreground">Outfit management coming soon.</div>
+                           <OutfitManagement />
                         </TabsContent>
                     </Tabs>
                 </div>
