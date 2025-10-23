@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from "./ui/button";
@@ -27,26 +28,26 @@ export function Newsletter() {
   };
 
   return (
-    <section className="bg-primary dark:bg-primary/20">
+    <section className="bg-muted dark:bg-muted/40">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h2 className="text-3xl font-headline text-primary-foreground">Stay in Touch</h2>
-        <p className="mt-4 text-lg text-primary-foreground/80 max-w-2xl mx-auto">
+        <h2 className="text-3xl font-headline text-primary">Stay in Touch</h2>
+        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
           Be the first to know about new arrivals, exclusive collections, and stories that inspire our designs.
         </p>
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
           <Input 
             type="email" 
             placeholder="Enter your email" 
-            className="flex-1 bg-background/20 border-border text-foreground placeholder:text-muted-foreground h-12 text-base"
+            className="flex-1 bg-background border-border text-foreground placeholder:text-muted-foreground h-12 text-base"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             aria-label="Email for newsletter"
           />
-          <Button type="submit" size="lg" className="w-full sm:w-auto bg-background text-foreground hover:bg-background/90">
+          <Button type="submit" size="lg" className="w-full sm:w-auto">
             Subscribe
           </Button>
         </form>
-        <p className="mt-4 text-xs text-primary-foreground/60">
+        <p className="mt-4 text-xs text-muted-foreground/80">
             We respect your privacy. Unsubscribe at any time.
         </p>
       </div>
