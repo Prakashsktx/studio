@@ -44,7 +44,7 @@ export function Header({ onNavigate }: HeaderProps) {
                 onClick={() => onNavigate('home')}
                 className="text-2xl font-headline tracking-wider text-primary hover:opacity-80 transition-opacity"
               >
-                Esterly Wear
+                fancybyaifie
               </button>
             </div>
 

@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'Esterly Wear Online Store',
+  title: 'fancybyaifie',
   description: 'Born Out of Free. Embracing authenticity and individual expression.',
 };
 

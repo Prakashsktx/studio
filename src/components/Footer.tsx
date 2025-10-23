@@ -20,7 +20,7 @@ export function Footer() {
             </button>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2024 Esterly Wear. All rights reserved.
+            © 2024 fancybyaifie. All rights reserved.
           </p>
         </div>
       </div>
