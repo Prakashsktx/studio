@@ -33,7 +33,7 @@ export default function AdminDashboardPage() {
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 <div className="max-w-7xl mx-auto">
                     <Tabs defaultValue="overview">
-                        <TabsList className="grid w-full grid-cols-3 max-w-md">
+                        <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="overview">Overview</TabsTrigger>
                             <TabsTrigger value="products">Products</TabsTrigger>
                             <TabsTrigger value="outfits">Outfits</TabsTrigger>
