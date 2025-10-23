@@ -7,12 +7,14 @@ import { Button } from './ui/button';
 import { SearchModal } from './SearchModal';
 import { PinterestIcon } from './icons';
 import { useTheme } from '@/context/ThemeProvider';
+import { Product } from '@/lib/products';
 
 interface HeaderProps {
   onNavigate: (category: string) => void;
+  onProductSelect: (product: Product) => void;
 }
 
-export function Header({ onNavigate }: HeaderProps) {
+export function Header({ onNavigate, onProductSelect }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -124,6 +126,7 @@ export function Header({ onNavigate }: HeaderProps) {
       <SearchModal 
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+        onProductSelect={onProductSelect}
       />
     </>
   );

@@ -72,7 +72,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
-      <Header onNavigate={handleBackToHome} />
+      <Header onNavigate={handleBackToHome} onProductSelect={handleSelectProduct} />
       <main className="flex-grow">
         {renderContent()}
       </main>

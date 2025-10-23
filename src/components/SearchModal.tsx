@@ -4,20 +4,45 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { products, Product } from "@/lib/products";
+import Image from "next/image";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface SearchModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onProductSelect: (product: Product) => void;
 }
 
-export function SearchModal({ isOpen, onClose }: SearchModalProps) {
+export function SearchModal({ isOpen, onClose, onProductSelect }: SearchModalProps) {
     const [searchTerm, setSearchTerm] = useState('');
+    const [results, setResults] = useState<Product[]>([]);
 
     useEffect(() => {
         if (!isOpen) {
             setSearchTerm('');
+            setResults([]);
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (searchTerm.length > 1) {
+            const lowerCaseTerm = searchTerm.toLowerCase();
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(lowerCaseTerm) ||
+                product.category.toLowerCase().includes(lowerCaseTerm) ||
+                product.description.toLowerCase().includes(lowerCaseTerm)
+            );
+            setResults(filteredProducts);
+        } else {
+            setResults([]);
+        }
+    }, [searchTerm]);
+
+    const handleSelect = (product: Product) => {
+        onProductSelect(product);
+        onClose();
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -37,9 +62,43 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="mt-6 text-center text-muted-foreground min-h-[100px]">
-                    <p>Start typing to see search results.</p>
-                </div>
+                <ScrollArea className="mt-6 max-h-[60vh]">
+                    {searchTerm.length > 1 ? (
+                        results.length > 0 ? (
+                             <div className="space-y-4">
+                                {results.map((product) => (
+                                    <button 
+                                        key={product.id} 
+                                        onClick={() => handleSelect(product)}
+                                        className="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors"
+                                    >
+                                        <div className="relative w-16 h-20 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                                            <Image
+                                                src={product.imageUrl}
+                                                alt={product.name}
+                                                fill
+                                                className="object-cover"
+                                                sizes="64px"
+                                            />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <h3 className="font-medium text-foreground">{product.name}</h3>
+                                            <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-muted-foreground py-10">
+                                <p>No results found for &quot;{searchTerm}&quot;</p>
+                            </div>
+                        )
+                    ) : (
+                         <div className="text-center text-muted-foreground py-10">
+                            <p>Start typing to see search results.</p>
+                        </div>
+                    )}
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     );
