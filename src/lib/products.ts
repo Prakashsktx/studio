@@ -71,5 +71,14 @@ export const products: Product[] = [
     imageUrl: "https://picsum.photos/seed/product-107/600/800",
     imageHint: "trench coat",
     description: "A timeless trench coat that will never go out of style. Made from a water-resistant cotton blend, it's perfect for transitional weather. Features a double-breasted front, a belted waist, and a classic collar."
+  },
+    {
+    id: 108,
+    name: "Suede Ankle Boots",
+    price: 190.00,
+    category: "Footwear",
+    imageUrl: "https://picsum.photos/seed/product-108/600/800",
+    imageHint: "suede boots",
+    description: "Step out in style with these elegant suede ankle boots. Featuring a comfortable block heel and a sleek silhouette, they are the perfect finishing touch to any autumn or winter outfit."
   }
 ];
