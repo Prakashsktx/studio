@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
+import { v4 as uuidv4 } from 'uuid';
 
 interface OutfitManagementProps {
   outfits: Outfit[];
@@ -52,7 +53,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
   
   const handleAdd = () => {
     const newOutfit: Outfit = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       name: formData.name,
       description: formData.description,
       image: formData.image,
@@ -69,7 +70,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       name: outfit.name,
       description: outfit.description,
       image: outfit.image,
-      items: [...outfit.items],
+      items: [...(Array.isArray(outfit.items) ? outfit.items : Object.values(outfit.items || {}))],
     });
     setIsEditDialogOpen(true);
   };
@@ -80,6 +81,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       o.id === editingOutfit.id
         ? {
             ...o,
+            id: editingOutfit.id,
             name: formData.name,
             description: formData.description,
             image: formData.image,
@@ -118,8 +120,19 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     });
   };
 
-  const getTotalPrice = (items: Product[]) => {
-    return items.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+  const getItemsArray = (items: Product[] | Record<string, Product>): Product[] => {
+    if (Array.isArray(items)) {
+      return items;
+    }
+    if (typeof items === 'object' && items !== null) {
+      return Object.values(items);
+    }
+    return [];
+  };
+
+  const getTotalPrice = (items: Product[] | Record<string, Product>) => {
+    const itemsArray = getItemsArray(items);
+    return itemsArray.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
   }
 
   return (
@@ -287,7 +300,9 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
               </TableRow>
             </TableHeader>
             <TableBody>
-              {outfits.map((outfit) => (
+              {outfits.map((outfit) => {
+                const itemsArray = getItemsArray(outfit.items);
+                return (
                 <TableRow key={outfit.id}>
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
@@ -301,8 +316,8 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{outfit.name}</TableCell>
-                  <TableCell>{outfit.items.length} items</TableCell>
-                  <TableCell>${getTotalPrice(outfit.items)}</TableCell>
+                  <TableCell>{itemsArray.length} items</TableCell>
+                  <TableCell>${getTotalPrice(itemsArray)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -347,7 +362,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </div>
@@ -355,7 +370,10 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
-        if (!isOpen) resetForm();
+        if (!isOpen) {
+          resetForm();
+          setEditingOutfit(null);
+        }
         setIsEditDialogOpen(isOpen);
       }}>
         <DialogContent className="sm:max-w-7xl max-h-[90vh]">
@@ -480,7 +498,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
             </Button>
             <Button onClick={() => {
               setIsEditDialogOpen(false);
-              resetForm();
             }} variant="outline" className="flex-1">
               Cancel
             </Button>
@@ -516,10 +533,10 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
               </div>
               
               <div>
-                <h4 className="mb-4 text-lg font-semibold">Outfit Items ({viewingOutfit?.items.length || 0})</h4>
+                <h4 className="mb-4 text-lg font-semibold">Outfit Items ({viewingOutfit ? getItemsArray(viewingOutfit.items).length : 0})</h4>
                 <div className="space-y-3">
-                  {viewingOutfit?.items && viewingOutfit.items.length > 0 ? (
-                    viewingOutfit.items.map((item, index) => (
+                  {viewingOutfit?.items && getItemsArray(viewingOutfit.items).length > 0 ? (
+                    getItemsArray(viewingOutfit.items).map((item, index) => (
                       <div key={index} className="flex items-center gap-4 p-3 border rounded-lg bg-background hover:shadow-sm transition-shadow">
                         <div className="w-16 h-20 relative rounded overflow-hidden bg-muted flex-shrink-0">
                           <Image

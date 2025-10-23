@@ -43,10 +43,15 @@ export default function Home() {
       const outfitsRef = ref(db, 'outfits');
         const unsubscribeOutfits = onValue(outfitsRef, (snapshot) => {
             const data = snapshot.val();
-            const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => ({
-              id: key,
-              ...data[key]
-            })) : [];
+            const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => {
+              const outfitData = data[key];
+              const itemsArray = outfitData.items ? Object.values(outfitData.items) : [];
+              return {
+                id: key,
+                ...outfitData,
+                items: itemsArray as Product[]
+              };
+            }) : [];
             setOutfits(outfitsArray);
         });
 

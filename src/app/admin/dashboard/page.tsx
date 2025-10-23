@@ -57,30 +57,34 @@ export default function AdminDashboardPage() {
                 const { id, ...rest } = product;
                 acc[id] = rest;
                 return acc;
-            }, {} as Record<string | number, Omit<Product, 'id'>>);
+            }, {} as Record<string, Omit<Product, 'id'>>);
             set(ref(db, 'products'), productsObject).then(() => {
                 toast({ title: "Products updated successfully!" });
             }).catch(error => {
                 toast({ variant: "destructive", title: "Error updating products", description: error.message });
             });
         }
-        setProducts(newProducts);
     };
     
     const handleSetOutfits = (newOutfits: Outfit[]) => {
         if (db) {
             const outfitsObject = newOutfits.reduce((acc, outfit) => {
                 const { id, ...rest } = outfit;
-                acc[id] = rest;
+                const itemsAsObject = (rest.items || []).reduce((itemAcc, item) => {
+                    itemAcc[item.id] = item;
+                    return itemAcc;
+                }, {} as Record<string, Product>);
+
+                acc[id] = { ...rest, items: itemsAsObject };
                 return acc;
-            }, {} as Record<string | number, Omit<Outfit, 'id'>>);
+            }, {} as any);
+            
             set(ref(db, 'outfits'), outfitsObject).then(() => {
                  toast({ title: "Outfits updated successfully!" });
             }).catch(error => {
                 toast({ variant: "destructive", title: "Error updating outfits", description: error.message });
             });
         }
-        setOutfits(newOutfits);
     };
 
     const categories = [...new Set(products.map(p => p.category))];
