@@ -53,13 +53,12 @@ export default function AdminDashboardPage() {
 
     const handleSetProducts = (newProducts: Product[]) => {
         if (db) {
-            const productsRef = ref(db, 'products');
             const productsObject = newProducts.reduce((acc, product) => {
                 const { id, ...rest } = product;
                 acc[id] = rest;
                 return acc;
             }, {} as Record<string | number, Omit<Product, 'id'>>);
-            set(productsRef, productsObject).then(() => {
+            set(ref(db, 'products'), productsObject).then(() => {
                 toast({ title: "Products updated successfully!" });
             }).catch(error => {
                 toast({ variant: "destructive", title: "Error updating products", description: error.message });
@@ -70,13 +69,12 @@ export default function AdminDashboardPage() {
     
     const handleSetOutfits = (newOutfits: Outfit[]) => {
         if (db) {
-            const outfitsRef = ref(db, 'outfits');
-             const outfitsObject = newOutfits.reduce((acc, outfit) => {
+            const outfitsObject = newOutfits.reduce((acc, outfit) => {
                 const { id, ...rest } = outfit;
                 acc[id] = rest;
                 return acc;
             }, {} as Record<string | number, Omit<Outfit, 'id'>>);
-            set(outfitsRef, outfitsObject).then(() => {
+            set(ref(db, 'outfits'), outfitsObject).then(() => {
                  toast({ title: "Outfits updated successfully!" });
             }).catch(error => {
                 toast({ variant: "destructive", title: "Error updating outfits", description: error.message });
@@ -133,23 +131,6 @@ export default function AdminDashboardPage() {
                                     );
                                 })}
                             </div>
-
-                            <Card className="mt-8">
-                                <CardHeader>
-                                    <CardTitle>Quick Actions</CardTitle>
-                                    <CardDescription>Common management tasks</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <Package className="mr-2 h-4 w-4"/>
-                                        Manage Products
-                                    </Button>
-                                    <Button variant="outline" className="w-full justify-start">
-                                        <LayoutGrid className="mr-2 h-4 w-4"/>
-                                        Manage Outfits
-                                    </Button>
-                                </CardContent>
-                            </Card>
                         </TabsContent>
                         <TabsContent value="products">
                            <ProductManagement products={products} setProducts={handleSetProducts} />
