@@ -83,11 +83,6 @@ export default function AdminDashboardPage() {
                     </Tabs>
                 </div>
             </main>
-            <div className="fixed bottom-4 right-4">
-                <Button variant="default" size="icon" className="rounded-full h-12 w-12 shadow-lg">
-                    <HelpCircle className="h-6 w-6" />
-                </Button>
-            </div>
         </div>
     );
 }
