@@ -1,10 +1,12 @@
+
 'use client';
 
 import { useState } from 'react';
-import { Search, Menu, Instagram, Facebook, ShoppingBag } from 'lucide-react';
+import { Search, Menu, Instagram, Facebook, ShoppingBag, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
 import { SearchModal } from './SearchModal';
 import { PinterestIcon } from './icons';
+import { useTheme } from '@/context/ThemeProvider';
 
 interface HeaderProps {
   onNavigate: (category: string) => void;
@@ -13,6 +15,7 @@ interface HeaderProps {
 export function Header({ onNavigate }: HeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const socialLinks = [
     { name: 'Shop', icon: ShoppingBag, url: 'https://example.com' },
@@ -77,6 +80,16 @@ export function Header({ onNavigate }: HeaderProps) {
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+              >
+                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
               </Button>
             </div>
           </div>
