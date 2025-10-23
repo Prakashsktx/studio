@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
+import { Checkbox } from './ui/checkbox';
 
 interface OutfitManagementProps {
   outfits: Outfit[];
@@ -41,6 +42,8 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
     items: [],
   });
 
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -48,6 +51,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       image: '',
       items: [],
     });
+    setSelectedProducts([]);
   };
   
   const handleAdd = () => {
@@ -114,6 +118,28 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
             return { ...prev, items: [...prev.items, product] };
         }
     });
+  };
+
+  const handleToggleSelectedProduct = (product: Product) => {
+    setSelectedProducts(prev => {
+        const isSelected = prev.some(p => p.id === product.id);
+        if (isSelected) {
+            return prev.filter(p => p.id !== product.id);
+        } else {
+            return [...prev, product];
+        }
+    });
+  };
+
+  const addSelectedProductsToOutfit = () => {
+    setFormData(prev => {
+        const newItems = selectedProducts.filter(p => !prev.items.some(item => item.id === p.id));
+        return {
+            ...prev,
+            items: [...prev.items, ...newItems]
+        };
+    });
+    setSelectedProducts([]);
   };
 
   const getTotalPrice = (items: Product[]) => {
@@ -220,19 +246,32 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                   
                   <div className="space-y-3">
                     <Label>Add Products to Outfit</Label>
+                     <div className="flex items-center gap-2 mb-2">
+                        <Button onClick={addSelectedProductsToOutfit} disabled={selectedProducts.length === 0}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Selected ({selectedProducts.length})
+                        </Button>
+                    </div>
                     <div className="border rounded-lg p-3 bg-muted/50">
                       <ScrollArea className="h-64">
                         <div className="space-y-2 pr-4">
                           {allProducts.map((product) => {
                             const isAdded = formData.items.some(item => item.id === product.id);
+                            const isSelected = selectedProducts.some(p => p.id === product.id);
                             return (
                               <div
                                 key={product.id}
                                 className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${
-                                  isAdded ? 'opacity-50' : ''
-                                }`}
-                                onClick={() => handleToggleProductInOutfit(product)}
+                                  isAdded ? 'opacity-50 pointer-events-none' : ''
+                                } ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                                onClick={() => !isAdded && handleToggleSelectedProduct(product)}
                               >
+                                <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() => !isAdded && handleToggleSelectedProduct(product)}
+                                    disabled={isAdded}
+                                    aria-label="Select product"
+                                />
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                                   <Image
                                     src={product.image}
@@ -247,13 +286,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                                   <p className="text-xs text-muted-foreground">{product.category}</p>
                                 </div>
                                 <p className="text-sm flex-shrink-0">${product.price.toFixed(2)}</p>
-                                <Button
-                                  variant={isAdded ? "secondary" : "outline"}
-                                  size="icon"
-                                  className="flex-shrink-0 h-8 w-8"
-                                >
-                                  {isAdded ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                                </Button>
                               </div>
                             );
                           })}
@@ -440,21 +472,34 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                     )}
                   </div>
                   
-                  <div className="space-y-3">
+                <div className="space-y-3">
                     <Label>Add Products to Outfit</Label>
+                     <div className="flex items-center gap-2 mb-2">
+                        <Button onClick={addSelectedProductsToOutfit} disabled={selectedProducts.length === 0}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Selected ({selectedProducts.length})
+                        </Button>
+                    </div>
                     <div className="border rounded-lg p-3 bg-muted/50">
                       <ScrollArea className="h-64">
                         <div className="space-y-2 pr-4">
                           {allProducts.map((product) => {
                             const isAdded = formData.items.some(item => item.id === product.id);
+                            const isSelected = selectedProducts.some(p => p.id === product.id);
                             return (
                               <div
                                 key={product.id}
                                 className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${
-                                  isAdded ? 'opacity-50' : ''
-                                }`}
-                                onClick={() => handleToggleProductInOutfit(product)}
+                                  isAdded ? 'opacity-50 pointer-events-none' : ''
+                                } ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                                onClick={() => !isAdded && handleToggleSelectedProduct(product)}
                               >
+                                <Checkbox
+                                    checked={isSelected}
+                                    onCheckedChange={() => !isAdded && handleToggleSelectedProduct(product)}
+                                    disabled={isAdded}
+                                    aria-label="Select product"
+                                />
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
                                   <Image
                                     src={product.image}
@@ -469,13 +514,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                                   <p className="text-xs text-muted-foreground">{product.category}</p>
                                 </div>
                                 <p className="text-sm flex-shrink-0">${product.price.toFixed(2)}</p>
-                                <Button
-                                  variant={isAdded ? "secondary" : "outline"}
-                                  size="icon"
-                                  className="flex-shrink-0 h-8 w-8"
-                                >
-                                  {isAdded ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                                </Button>
                               </div>
                             );
                           })}
