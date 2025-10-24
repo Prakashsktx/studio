@@ -207,6 +207,16 @@ export function ProductManagement({ products }: ProductManagementProps) {
                 </div>
                 
                 <div className="space-y-2">
+                  <Label htmlFor="imageHint">Image Hint</Label>
+                  <Input
+                    id="imageHint"
+                    value={formData.imageHint}
+                    onChange={(e) => setFormData({ ...formData, imageHint: e.target.value })}
+                    placeholder="e.g. 'linen shirt'"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="affiliateLink">Affiliate Link</Label>
                   <Input
                     id="affiliateLink"
@@ -378,6 +388,15 @@ export function ProductManagement({ products }: ProductManagementProps) {
                 onChange={(e) => setFormData({ ...formData, image: e.target.value })}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-imageHint">Image Hint</Label>
+              <Input
+                id="edit-imageHint"
+                value={formData.imageHint}
+                onChange={(e) => setFormData({ ...formData, imageHint: e.target.value })}
+              />
+            </div>
             
             <div className="space-y-2">
                 <Label htmlFor="edit-affiliateLink">Affiliate Link</Label>
@@ -402,3 +421,5 @@ export function ProductManagement({ products }: ProductManagementProps) {
     </Card>
   );
 }
+
+    
