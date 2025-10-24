@@ -50,7 +50,7 @@ export default function Home() {
             const itemsArray = outfitData.items && typeof outfitData.items === 'object' 
               ? Object.keys(outfitData.items).map(itemKey => ({
                   id: itemKey,
-                  ...outfitData.items[itemKey]
+                  ...(outfitData.items[itemKey] as Omit<Product, 'id'>)
                 }))
               : [];
 
