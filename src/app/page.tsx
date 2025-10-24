@@ -47,9 +47,11 @@ export default function Home() {
           const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => {
             const outfitData = data[key];
             
-            // This is the corrected logic to handle items
             const itemsArray = outfitData.items && typeof outfitData.items === 'object' 
-              ? Object.values(outfitData.items) 
+              ? Object.keys(outfitData.items).map(itemKey => ({
+                  id: itemKey,
+                  ...outfitData.items[itemKey]
+                }))
               : [];
 
             return {
