@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,7 +47,10 @@ export default function Home() {
           const outfitsArray: Outfit[] = data ? Object.keys(data).map(key => {
             const outfitData = data[key];
             
-            const itemsArray = outfitData.items ? Object.values(outfitData.items) : [];
+            // This is the corrected logic to handle items
+            const itemsArray = outfitData.items && typeof outfitData.items === 'object' 
+              ? Object.values(outfitData.items) 
+              : [];
 
             return {
               id: key,
