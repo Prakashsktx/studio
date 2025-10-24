@@ -1,23 +1,27 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { OutfitGrid } from '@/components/OutfitGrid';
-import { ProductDetail } from '@/components/ProductDetail';
-import type { Product } from '@/lib/products';
 import { Newsletter } from '@/components/Newsletter';
 import { useDatabase } from '@/firebase';
 import { ref, onValue } from 'firebase/database';
-import { Outfit } from '@/lib/outfits';
+import type { Outfit } from '@/lib/outfits';
+import type { Product } from '@/lib/products';
 import { useRouter } from 'next/navigation';
+import { OutfitDetailDialog } from '@/components/OutfitDetailDialog';
+
 
 export default function OutfitsPage() {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const db = useDatabase();
   const router = useRouter();
+
+  const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   useEffect(() => {
     if (db) {
@@ -64,39 +68,34 @@ export default function OutfitsPage() {
     }
   }, [db]);
 
-  const handleSelectProduct = (product: Product) => {
-    setSelectedProduct(product);
-    window.scrollTo(0, 0);
-  }
-
-  const handleBackToOutfits = () => {
-    setSelectedProduct(null);
-  }
-
-  const handleSelectOutfit = (outfit: Outfit) => {
-    // For now, we'll just log this. In the future you could navigate to an outfit detail page.
-    console.log('Selected outfit:', outfit);
-  }
-  
-  const handleHomeNavigation = () => {
+  const handleBackToHome = () => {
     router.push('/');
   }
 
-  const renderContent = () => {
-    if (selectedProduct) {
-        return <ProductDetail product={selectedProduct} onBack={handleBackToOutfits} />;
-    }
-    return <OutfitGrid outfits={outfits} onOutfitClick={handleSelectOutfit} onBack={handleHomeNavigation}/>;
+  const handleOutfitClick = (outfit: Outfit) => {
+    console.log("Selected outfit:", outfit);
+    setSelectedOutfit(outfit);
+    setIsDetailOpen(true);
+  };
+  
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setSelectedOutfit(null);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
-      <Header onNavigate={handleHomeNavigation} onProductSelect={handleSelectProduct} products={products} />
+      <Header onNavigate={handleBackToHome} onProductSelect={() => {}} products={products} />
       <main className="flex-grow">
-        {renderContent()}
+        <OutfitGrid outfits={outfits} onOutfitClick={handleOutfitClick} onBack={handleBackToHome}/>
       </main>
       <Newsletter />
       <Footer />
+      <OutfitDetailDialog
+        outfit={selectedOutfit}
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+      />
     </div>
   );
 }
