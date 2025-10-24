@@ -59,19 +59,17 @@ export function Header({ onNavigate, onProductSelect, products }: HeaderProps) {
             <nav className="hidden md:flex items-center space-x-8">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
-                const linkContent = (
-                  <div
-                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors group"
-                  >
-                    <Icon className="h-7 w-7" />
-                    <span className="text-xs font-medium">{social.name}</span>
-                  </div>
-                );
 
                 if (social.isInternal) {
                   return (
-                    <Link key={social.name} href={social.url} passHref legacyBehavior>
-                      <a aria-label={social.name}>{linkContent}</a>
+                    <Link
+                      key={social.name}
+                      href={social.url}
+                      aria-label={social.name}
+                      className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors group"
+                    >
+                      <Icon className="h-7 w-7" />
+                      <span className="text-xs font-medium">{social.name}</span>
                     </Link>
                   );
                 }
@@ -121,20 +119,18 @@ export function Header({ onNavigate, onProductSelect, products }: HeaderProps) {
               <nav className="flex justify-center space-x-6 px-4">
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
-                  const linkContent = (
-                     <div
-                      className="flex flex-col items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Icon className="h-7 w-7"/>
-                      <span className="text-xs font-medium">{social.name}</span>
-                    </div>
-                  );
 
                   if (social.isInternal) {
                     return (
-                       <Link key={social.name} href={social.url} passHref legacyBehavior>
-                        <a aria-label={social.name}>{linkContent}</a>
+                       <Link
+                        key={social.name}
+                        href={social.url}
+                        aria-label={social.name}
+                        className="flex flex-col items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Icon className="h-7 w-7"/>
+                        <span className="text-xs font-medium">{social.name}</span>
                       </Link>
                     )
                   }
