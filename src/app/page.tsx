@@ -19,7 +19,7 @@ type View = 'home' | 'product' | 'outfits';
 
 export default function Home() {
   const [view, setView] = useState<View>('home');
-  const [currentCategory, setCurrentCategory] = useState<string | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<string | null>('All');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [outfits, setOutfits] = useState<Outfit[]>([]);
@@ -31,7 +31,7 @@ export default function Home() {
       const unsubscribeProducts = onValue(productsRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          const productsArray = Object.keys(data).map(key => ({
+          const productsArray: Product[] = Object.keys(data).map(key => ({
             id: key,
             ...data[key]
           }));
@@ -112,7 +112,7 @@ export default function Home() {
     console.log('Selected outfit:', outfit);
   }
 
-  const categories = [...new Set(products.map(p => p.category))];
+  const categories = ['All', ...new Set(products.map(p => p.category))];
 
   const renderContent = () => {
     if (view === 'product' && selectedProduct) {
@@ -131,7 +131,7 @@ export default function Home() {
             />
             <ProductGrid 
                 products={products}
-                category={currentCategory}
+                category={currentCategory === 'All' ? null : currentCategory}
                 onProductClick={handleSelectProduct} 
             />
         </>
