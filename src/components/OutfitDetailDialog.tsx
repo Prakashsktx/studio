@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import type { Outfit } from '@/lib/outfits';
 import { Button } from './ui/button';
+import { Product } from '@/lib/products';
 
 interface OutfitDetailDialogProps {
   outfit: Outfit | null;
@@ -16,7 +17,7 @@ const isValidUrl = (url: string | null | undefined): boolean => {
   return url.startsWith('http://') || url.startsWith('https://');
 };
 
-const getTotalPrice = (items: any[] | undefined) => {
+const getTotalPrice = (items: Product[] | undefined) => {
     if (!items) return '0.00';
     return items.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
 }
@@ -27,7 +28,7 @@ export function OutfitDetailDialog({ outfit, isOpen, onClose }: OutfitDetailDial
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl p-0 z-[100]">
+      <DialogContent className="max-w-6xl p-0 z-[100]">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-2xl">{outfit.name}</DialogTitle>
           <DialogDescription>{outfit.description}</DialogDescription>
