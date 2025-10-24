@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { Button } from './ui/button';
 import imageData from '@/lib/placeholder-images.json';
+import Link from 'next/link';
 
 const { placeholderImages: PlaceHolderImages } = imageData;
 
@@ -27,10 +28,10 @@ export function HeroSection() {
             <div className="space-y-4">
               <Button 
                 size="lg"
-                onClick={() => window.dispatchEvent(new CustomEvent('show-outfits'))}
                 className="bg-primary text-primary-foreground px-8 py-3 hover:bg-primary/90 transition-colors"
+                asChild
               >
-                Shop My Outfit
+                <Link href="/outfits">Shop My Outfit</Link>
               </Button>
             </div>
           </div>
