@@ -34,7 +34,7 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                         <p className="text-base text-muted-foreground leading-relaxed">{product.description}</p>
                         {product.affiliateLink && (
                             <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" asChild>
-                               <Link href={product.affiliateLink} target="_blank">View Link</Link>
+                               <Link href={product.affiliateLink} target="_blank">Shop Me</Link>
                             </Button>
                         )}
                     </div>
