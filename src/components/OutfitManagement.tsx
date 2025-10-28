@@ -328,13 +328,17 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                 <TableRow key={outfit.id}>
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
-                      <Image
-                        src={outfit.image}
-                        alt={outfit.name}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
+                      {outfit.image ? (
+                        <Image
+                          src={outfit.image}
+                          alt={outfit.name}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-xs text-muted-foreground">No Img</div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{outfit.name}</TableCell>
@@ -538,13 +542,15 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                  <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-muted">
-                  <Image
-                    src={viewingOutfit?.image || ''}
-                    alt={viewingOutfit?.name || ''}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
-                  />
+                  {viewingOutfit?.image && (
+                    <Image
+                      src={viewingOutfit.image}
+                      alt={viewingOutfit.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover"
+                    />
+                  )}
                 </div>
                  <div className="p-3 bg-muted/50 rounded-lg text-sm">
                   <div className="flex justify-between items-center font-medium">
@@ -561,13 +567,15 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                     getItemsArray(viewingOutfit.items).map((item, index) => (
                       <div key={index} className="flex items-center gap-4 p-3 border rounded-lg bg-background hover:shadow-sm transition-shadow">
                         <div className="w-16 h-20 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            sizes="64px"
-                            className="object-cover"
-                          />
+                          {item.image && (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                            />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{item.name}</p>
