@@ -88,7 +88,7 @@ export default function Home() {
   }
 
   const categories = ['All', ...new Set(products.map(p => p.category))].filter(
-    (category) => category.toLowerCase() !== 'tops'
+    (category) => category.toLowerCase() !== 'top'
   );
 
   const renderContent = () => {
