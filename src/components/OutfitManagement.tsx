@@ -14,27 +14,28 @@ import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
-import { v4 as uuidv4 } from 'uuid';
-import { useDatabase } from '@/firebase';
-import { ref, set, remove, update } from 'firebase/database';
-import { useToast } from '@/hooks/use-toast';
+
+// Utility function to check for a valid external URL structure (http or https)
+const isValidUrl = (url: string | null | undefined): boolean => {
+  if (!url || typeof url !== 'string' || url.length < 5) return false;
+  // Next.js requires absolute URLs for external images
+  return url.startsWith('http://') || url.startsWith('https://');
+};
 
 interface OutfitManagementProps {
   outfits: Outfit[];
+  setOutfits: React.Dispatch<React.SetStateAction<Outfit[]>>;
   allProducts: Product[];
 }
 
-export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps) {
-  const db = useDatabase();
-  const { toast } = useToast();
-
+export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitManagementProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null);
   const [viewingOutfit, setViewingOutfit] = useState<Outfit | null>(null);
   const [outfitToDelete, setOutfitToDelete] = useState<Outfit | null>(null);
-  
+
   const [formData, setFormData] = useState<{
     name: string;
     description: string;
@@ -56,31 +57,19 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
     });
   };
 
-  const itemsToObject = (items: Product[]) => {
-    return items.reduce((acc, item) => {
-        const { id, ...rest } = item;
-        acc[id] = rest;
-        return acc;
-    }, {} as Record<string, Omit<Product, 'id'>>);
-  }
-  
   const handleAdd = () => {
-    if (!db) return;
-    const newOutfitId = uuidv4();
-    const newOutfit: Omit<Outfit, 'id'> = {
+    const newOutfit: Outfit = {
+      id: Date.now().toString(),
       name: formData.name,
       description: formData.description,
       image: formData.image,
-      items: itemsToObject(formData.items) as any, // Firebase needs an object
+      items: formData.items,
+      // 💥 FIX: Add the required 'createdAt' property (from original file comment)
+      createdAt: new Date().toISOString(),
     };
-
-    set(ref(db, `outfits/${newOutfitId}`), newOutfit).then(() => {
-        toast({ title: 'Outfit added successfully!' });
-        setIsAddDialogOpen(false);
-        resetForm();
-    }).catch(e => {
-        toast({ variant: 'destructive', title: 'Error adding outfit', description: e.message });
-    });
+    setOutfits([...outfits, newOutfit]);
+    setIsAddDialogOpen(false);
+    resetForm();
   };
 
   const handleEdit = (outfit: Outfit) => {
@@ -89,41 +78,37 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
       name: outfit.name,
       description: outfit.description,
       image: outfit.image,
-      items: getItemsArray(outfit.items || []),
+      items: [...outfit.items],
     });
     setIsEditDialogOpen(true);
   };
-  
-  const handleUpdate = () => {
-    if (!editingOutfit || !db) return;
-    const updatedOutfitData = {
-        name: formData.name,
-        description: formData.description,
-        image: formData.image,
-        items: itemsToObject(formData.items),
-    };
 
-    update(ref(db, `outfits/${editingOutfit.id}`), updatedOutfitData).then(() => {
-        toast({ title: 'Outfit updated successfully!' });
-        setIsEditDialogOpen(false);
-        setEditingOutfit(null);
-        resetForm();
-    }).catch(e => {
-        toast({ variant: 'destructive', title: 'Error updating outfit', description: e.message });
-    });
+  const handleUpdate = () => {
+    if (!editingOutfit) return;
+    const updatedOutfits = outfits.map(o =>
+      o.id === editingOutfit.id
+        ? {
+          ...o,
+          name: formData.name,
+          description: formData.description,
+          image: formData.image,
+          items: formData.items,
+        }
+        : o
+    );
+    setOutfits(updatedOutfits);
+    setIsEditDialogOpen(false);
+    setEditingOutfit(null);
+    resetForm();
   };
-  
+
   const handleDelete = () => {
-    if (outfitToDelete && db) {
-        remove(ref(db, `outfits/${outfitToDelete.id}`)).then(() => {
-            toast({ title: 'Outfit deleted successfully!' });
-            setOutfitToDelete(null);
-        }).catch(e => {
-            toast({ variant: 'destructive', title: 'Error deleting outfit', description: e.message });
-        });
+    if (outfitToDelete) {
+      setOutfits(outfits.filter(o => o.id !== outfitToDelete.id));
+      setOutfitToDelete(null);
     }
   };
-  
+
   const handleView = (outfit: Outfit) => {
     setViewingOutfit(outfit);
     setIsViewDialogOpen(true);
@@ -131,30 +116,21 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
 
   const handleToggleProductInOutfit = (product: Product, action: 'add' | 'remove') => {
     setFormData(prev => {
-        const isAlreadyIn = prev.items.some(item => item.id === product.id);
-        if (action === 'add' && !isAlreadyIn) {
-            return { ...prev, items: [...prev.items, product] };
-        }
-        if (action === 'remove' && isAlreadyIn) {
-             return { ...prev, items: prev.items.filter(item => item.id !== product.id) };
-        }
-        return prev;
+      const isAlreadyIn = prev.items.some(item => item.id === product.id);
+      if (action === 'add' && !isAlreadyIn) {
+        return { ...prev, items: [...prev.items, product] };
+      }
+      if (action === 'remove' && isAlreadyIn) {
+        return { ...prev, items: prev.items.filter(item => item.id !== product.id) };
+      }
+      return prev;
     });
   };
 
-  const getItemsArray = (items: Product[] | Record<string, Product>): Product[] => {
-    if (Array.isArray(items)) {
-      return items;
-    }
-    if (typeof items === 'object' && items !== null) {
-      return Object.keys(items).map(key => ({ id: key, ...(items[key] as Omit<Product, 'id'>) }));
-    }
-    return [];
-  };
-
-  const getTotalPrice = (items: Product[] | Record<string, Product>) => {
-    const itemsArray = getItemsArray(items);
-    return itemsArray.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+  // 🐛 FIX: Add defensive check for non-array input to prevent "TypeError: items.reduce is not a function"
+  const getTotalPrice = (items: Product[] | null | undefined) => {
+    const safeItems = Array.isArray(items) ? items : []; 
+    return safeItems.reduce((sum, item) => sum + item.price, 0).toFixed(2);
   }
 
   return (
@@ -224,13 +200,18 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                         {formData.items.map((item, index) => (
                           <div key={index} className="flex items-center gap-3 p-2 bg-background rounded border">
                             <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                              <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                sizes="48px"
-                                className="object-cover"
-                              />
+                              {/* FIX 1: Use isValidUrl check */}
+                              {isValidUrl(item.image) ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center h-full text-[8px] text-muted-foreground/70">No Img</div>
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{item.name}</p>
@@ -254,7 +235,7 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                       </p>
                     )}
                   </div>
-                  
+
                   <div className="space-y-3">
                     <Label>Add Products to Outfit</Label>
                     <div className="border rounded-lg p-3 bg-muted/50">
@@ -265,19 +246,23 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                             return (
                               <div
                                 key={product.id}
-                                className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${
-                                  isAdded ? 'opacity-50 pointer-events-none' : ''
-                                }`}
+                                className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${isAdded ? 'opacity-50 pointer-events-none' : ''
+                                  }`}
                                 onClick={() => !isAdded && handleToggleProductInOutfit(product, 'add')}
                               >
                                 <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                                  <Image
-                                    src={product.image}
-                                    alt={product.name}
-                                    fill
-                                    sizes="48px"
-                                    className="object-cover"
-                                  />
+                                  {/* FIX 2: Use isValidUrl check */}
+                                  {isValidUrl(product.image) ? (
+                                    <Image
+                                      src={product.image}
+                                      alt={product.name}
+                                      fill
+                                      sizes="48px"
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <div className="flex items-center justify-center h-full text-[8px] text-muted-foreground/70">No Img</div>
+                                  )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium truncate">{product.name}</p>
@@ -322,13 +307,12 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
               </TableRow>
             </TableHeader>
             <TableBody>
-              {outfits.map((outfit) => {
-                const itemsArray = getItemsArray(outfit.items);
-                return (
+              {outfits.map((outfit) => (
                 <TableRow key={outfit.id}>
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
-                      {outfit.image ? (
+                      {/* FIX 3 (The original location of the error): Use isValidUrl check */}
+                      {isValidUrl(outfit.image) ? (
                         <Image
                           src={outfit.image}
                           alt={outfit.name}
@@ -337,13 +321,15 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                           className="object-cover"
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-full text-xs text-muted-foreground">No Img</div>
+                        <div className="flex items-center justify-center h-full text-[8px] text-muted-foreground/70 border border-dashed">
+                          No Img
+                        </div>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{outfit.name}</TableCell>
-                  <TableCell>{itemsArray.length} items</TableCell>
-                  <TableCell>${getTotalPrice(itemsArray)}</TableCell>
+                  <TableCell>{outfit.items.length} items</TableCell>
+                  <TableCell>${getTotalPrice(outfit.items)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -361,34 +347,34 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => setOutfitToDelete(outfit)}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete this
-                                outfit.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel onClick={() => setOutfitToDelete(null)}>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setOutfitToDelete(outfit)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete this
+                              outfit.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setOutfitToDelete(null)}>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
-              )})}
+              ))}
             </TableBody>
           </Table>
         </div>
@@ -396,10 +382,7 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          resetForm();
-          setEditingOutfit(null);
-        }
+        if (!isOpen) resetForm();
         setIsEditDialogOpen(isOpen);
       }}>
         <DialogContent className="sm:max-w-7xl max-h-[90vh]">
@@ -437,84 +420,93 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
               </div>
 
               <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>Selected Items ({formData.items.length})</Label>
-                      <span className="text-sm text-muted-foreground">
-                        Total: ${getTotalPrice(formData.items)}
-                      </span>
-                    </div>
-                    {formData.items.length > 0 ? (
-                      <div className="space-y-2 border rounded-lg p-3 bg-muted/50">
-                        {formData.items.map((item, index) => (
-                          <div key={index} className="flex items-center gap-3 p-2 bg-background rounded border">
+                <div className="flex items-center justify-between">
+                  <Label>Selected Items ({formData.items.length})</Label>
+                  <span className="text-sm text-muted-foreground">
+                    Total: ${getTotalPrice(formData.items)}
+                  </span>
+                </div>
+                {formData.items.length > 0 ? (
+                  <div className="space-y-2 border rounded-lg p-3 bg-muted/50">
+                    {formData.items.map((item, index) => (
+                      <div key={index} className="flex items-center gap-3 p-2 bg-background rounded border">
+                        <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
+                          {/* FIX 4: Use isValidUrl check */}
+                          {isValidUrl(item.image) ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              sizes="48px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-[8px] text-muted-foreground/70">No Img</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{item.category}</p>
+                        </div>
+                        <p className="text-sm flex-shrink-0">${item.price.toFixed(2)}</p>
+                        <Button
+                          onClick={() => handleToggleProductInOutfit(item, 'remove')}
+                          variant="ghost"
+                          size="icon"
+                          className="flex-shrink-0 h-8 w-8"
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4 border rounded-lg bg-muted/50">
+                    No items added yet. Select products below.
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <Label>Add Products to Outfit</Label>
+                <div className="border rounded-lg p-3 bg-muted/50">
+                  <ScrollArea className="h-64">
+                    <div className="space-y-2 pr-4">
+                      {allProducts.map((product) => {
+                        const isAdded = formData.items.some(item => item.id === product.id);
+                        return (
+                          <div
+                            key={product.id}
+                            className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${isAdded ? 'opacity-50 pointer-events-none' : ''
+                              }`}
+                            onClick={() => !isAdded && handleToggleProductInOutfit(product, 'add')}
+                          >
                             <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                              <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                sizes="48px"
-                                className="object-cover"
-                              />
+                              {/* FIX 5: Use isValidUrl check */}
+                              {isValidUrl(product.image) ? (
+                                <Image
+                                  src={product.image}
+                                  alt={product.name}
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center h-full text-[8px] text-muted-foreground/70">No Img</div>
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{item.name}</p>
-                              <p className="text-xs text-muted-foreground">{item.category}</p>
+                              <p className="text-sm font-medium truncate">{product.name}</p>
+                              <p className="text-xs text-muted-foreground">{product.category}</p>
                             </div>
-                            <p className="text-sm flex-shrink-0">${item.price.toFixed(2)}</p>
-                            <Button
-                              onClick={() => handleToggleProductInOutfit(item, 'remove')}
-                              variant="ghost"
-                              size="icon"
-                              className="flex-shrink-0 h-8 w-8"
-                            >
-                              <X className="h-4 w-4 text-destructive" />
-                            </Button>
+                            <p className="text-sm flex-shrink-0">${product.price.toFixed(2)}</p>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4 border rounded-lg bg-muted/50">
-                        No items added yet. Select products below.
-                      </p>
-                    )}
-                  </div>
-                  
-                <div className="space-y-3">
-                    <Label>Add Products to Outfit</Label>
-                    <div className="border rounded-lg p-3 bg-muted/50">
-                      <ScrollArea className="h-64">
-                        <div className="space-y-2 pr-4">
-                          {allProducts.map((product) => {
-                            const isAdded = formData.items.some(item => item.id === product.id);
-                            return (
-                              <div
-                                key={product.id}
-                                className={`flex items-center gap-3 p-2 rounded border bg-background cursor-pointer hover:bg-muted/80 ${
-                                  isAdded ? 'opacity-50 pointer-events-none' : ''
-                                }`}
-                                onClick={() => !isAdded && handleToggleProductInOutfit(product, 'add')}
-                              >
-                                <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                                  <Image
-                                    src={product.image}
-                                    alt={product.name}
-                                    fill
-                                    sizes="48px"
-                                    className="object-cover"
-                                  />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{product.name}</p>
-                                  <p className="text-xs text-muted-foreground">{product.category}</p>
-                                </div>
-                                <p className="text-sm flex-shrink-0">${product.price.toFixed(2)}</p>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </ScrollArea>
+                        );
+                      })}
                     </div>
-                  </div>
+                  </ScrollArea>
+                </div>
+              </div>
             </div>
           </ScrollArea>
 
@@ -524,6 +516,7 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
             </Button>
             <Button onClick={() => {
               setIsEditDialogOpen(false);
+              resetForm();
             }} variant="outline" className="flex-1">
               Cancel
             </Button>
@@ -541,33 +534,40 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
           <ScrollArea className="max-h-[70vh] pr-4">
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                 <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-muted">
-                  {viewingOutfit?.image && (
+                <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-muted">
+                  {/* FIX 6: Use isValidUrl check */}
+                  {isValidUrl(viewingOutfit?.image) ? (
                     <Image
-                      src={viewingOutfit.image}
-                      alt={viewingOutfit.name}
+                      src={viewingOutfit?.image || ''}
+                      alt={viewingOutfit?.name || 'Outfit Image'}
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover"
                     />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground/70 border border-dashed">
+                      No Outfit Image Available
+                    </div>
                   )}
                 </div>
-                 <div className="p-3 bg-muted/50 rounded-lg text-sm">
+                <div className="p-3 bg-muted/50 rounded-lg text-sm">
                   <div className="flex justify-between items-center font-medium">
                     <span>Total Price:</span>
-                    <span>${viewingOutfit ? getTotalPrice(viewingOutfit.items) : '0.00'}</span>
+                    {/* The fix in getTotalPrice handles cases where viewingOutfit.items might be undefined/null during render. */}
+                    <span>${viewingOutfit ? getTotalPrice(viewingOutfit.items) : '0.00'}</span> 
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="mb-4 text-lg font-semibold">Outfit Items ({viewingOutfit ? getItemsArray(viewingOutfit.items).length : 0})</h4>
+                <h4 className="mb-4 text-lg font-semibold">Outfit Items ({viewingOutfit?.items.length || 0})</h4>
                 <div className="space-y-3">
-                  {viewingOutfit?.items && getItemsArray(viewingOutfit.items).length > 0 ? (
-                    getItemsArray(viewingOutfit.items).map((item, index) => (
+                  {viewingOutfit?.items && viewingOutfit.items.length > 0 ? (
+                    viewingOutfit.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-4 p-3 border rounded-lg bg-background hover:shadow-sm transition-shadow">
                         <div className="w-16 h-20 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                          {item.image && (
+                          {/* FIX 7: Use isValidUrl check */}
+                          {isValidUrl(item.image) ? (
                             <Image
                               src={item.image}
                               alt={item.name}
@@ -575,12 +575,14 @@ export function OutfitManagement({ outfits, allProducts }: OutfitManagementProps
                               sizes="64px"
                               className="object-cover"
                             />
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-[8px] text-muted-foreground/70">No Img</div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{item.name}</p>
                           <p className="text-sm text-muted-foreground">{item.category}</p>
-                           <p className="text-sm font-semibold mt-1">${item.price.toFixed(2)}</p>
+                          <p className="text-sm font-semibold mt-1">${item.price.toFixed(2)}</p>
                         </div>
                       </div>
                     ))

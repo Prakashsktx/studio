@@ -100,12 +100,13 @@ export default function AdminDashboardPage() {
                             </div>
                         </TabsContent>
                         <TabsContent value="products">
-                           <ProductManagement products={products} />
+                           <ProductManagement products={products} setProducts={setProducts} />
                         </TabsContent>
                          <TabsContent value="outfits">
                            <OutfitManagement 
                              outfits={outfits} 
                              allProducts={products}
+                             setOutfits={setOutfits}
                            />
                         </TabsContent>
                     </Tabs>

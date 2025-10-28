@@ -1,4 +1,3 @@
-
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -11,6 +10,12 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
       {
         protocol: 'https',
         hostname: 'placehold.co',
@@ -43,7 +48,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'static.vecteezy.com',
+        hostname: 'images.pexels.com',
         port: '',
         pathname: '/**',
       },
@@ -53,8 +58,16 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // ✅ FIX: Add the missing hostname for Vecteezy images
+      {
+        protocol: 'https',
+        hostname: 'static.vecteezy.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
+  devIndicators: false
 };
 
 export default nextConfig;
