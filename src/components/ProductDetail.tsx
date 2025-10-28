@@ -18,7 +18,7 @@ export function ProductDetail({ product, onBack }: ProductDetailProps) {
                     Back to products
                 </Button>
                 <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="relative aspect-[3/4] w-full max-w-lg mx-auto rounded-lg overflow-hidden shadow-lg">
+                    <div className="relative aspect-[3/4] w-full max-w-lg mx-auto rounded-lg overflow-hidden shadow-lg bg-white">
                         <Image
                             src={product.image}
                             alt={product.name}
