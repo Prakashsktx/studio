@@ -11,7 +11,7 @@ interface ProductDetailProps {
 
 export function ProductDetail({ product, onBack }: ProductDetailProps) {
     return (
-        <section className="bg-white dark:bg-card">
+        <section className="bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <Button variant="ghost" onClick={onBack} className="mb-8">
                     <ArrowLeft className="mr-2 h-4 w-4" />
