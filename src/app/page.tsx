@@ -13,6 +13,7 @@ import { Newsletter } from '@/components/Newsletter';
 import { useDatabase } from '@/firebase';
 import { ref, onValue } from 'firebase/database';
 import { Outfit } from '@/lib/outfits';
+import { useRouter } from 'next/navigation';
 
 type View = 'home' | 'product';
 
@@ -22,6 +23,7 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const db = useDatabase();
+  const router = useRouter();
 
   useEffect(() => {
     if (db) {
@@ -63,6 +65,16 @@ export default function Home() {
       window.removeEventListener('navigate-outfit', handleNavigateOutfit);
     };
   }, [products]);
+
+  useEffect(() => {
+    const handleAdminAccess = () => {
+      router.push('/admin');
+    };
+    window.addEventListener('admin-access-trigger', handleAdminAccess);
+    return () => {
+      window.removeEventListener('admin-access-trigger', handleAdminAccess);
+    };
+  }, [router]);
   
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
