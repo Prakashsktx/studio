@@ -87,7 +87,9 @@ export default function Home() {
     setView('home');
   }
 
-  const categories = ['All', ...new Set(products.map(p => p.category))];
+  const categories = ['All', ...new Set(products.map(p => p.category))].filter(
+    (category) => category.toLowerCase() !== 'tops'
+  );
 
   const renderContent = () => {
     if (view === 'product' && selectedProduct) {
