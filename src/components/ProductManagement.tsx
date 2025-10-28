@@ -22,7 +22,7 @@ import { ref, set, push, remove } from 'firebase/database';
 type ProductFormData = Omit<Product, 'id' | 'price'> & { price: string };
 
 // Define categories array
-const categories = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Accessories', 'Shoes'];
+const categories = ['Tops', 'Bottoms', 'Accessories', 'Footwear', 'Outerwear'];
 
 interface ProductManagementProps {
   products: Product[];
