@@ -6,6 +6,7 @@ export interface Outfit {
   description: string;
   image: string;
   items: Product[];
+  createdAt?: string;
 }
 
 export const outfits: Outfit[] = []

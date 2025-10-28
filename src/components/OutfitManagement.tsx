@@ -14,6 +14,8 @@ import Image from 'next/image';
 import { ScrollArea } from './ui/scroll-area';
 import { Product } from '@/lib/products';
 import { Outfit } from '@/lib/outfits';
+import { useDatabase } from '@/firebase';
+import { ref, set, push, remove } from 'firebase/database';
 
 // Utility function to check for a valid external URL structure (http or https)
 const isValidUrl = (url: string | null | undefined): boolean => {
@@ -29,6 +31,7 @@ interface OutfitManagementProps {
 }
 
 export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitManagementProps) {
+  const db = useDatabase();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -58,16 +61,23 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
   };
 
   const handleAdd = () => {
-    const newOutfit: Outfit = {
-      id: Date.now().toString(),
+    if (!db) return;
+
+    const newOutfitData = {
       name: formData.name,
       description: formData.description,
       image: formData.image,
-      items: formData.items,
-      // 💥 FIX: Add the required 'createdAt' property (from original file comment)
+      items: formData.items.reduce((acc, item) => {
+        // Firebase RTDB doesn't like arrays, convert to object
+        acc[item.id] = item;
+        return acc;
+      }, {} as {[key: string]: Product}),
       createdAt: new Date().toISOString(),
     };
-    setOutfits([...outfits, newOutfit]);
+    
+    const newOutfitRef = push(ref(db, 'outfits'));
+    set(newOutfitRef, newOutfitData);
+
     setIsAddDialogOpen(false);
     resetForm();
   };
@@ -78,33 +88,36 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
       name: outfit.name,
       description: outfit.description,
       image: outfit.image,
-      items: [...outfit.items],
+      items: [...(outfit.items || [])],
     });
     setIsEditDialogOpen(true);
   };
 
   const handleUpdate = () => {
-    if (!editingOutfit) return;
-    const updatedOutfits = outfits.map(o =>
-      o.id === editingOutfit.id
-        ? {
-          ...o,
-          name: formData.name,
-          description: formData.description,
-          image: formData.image,
-          items: formData.items,
-        }
-        : o
-    );
-    setOutfits(updatedOutfits);
+    if (!editingOutfit || !db) return;
+
+    const updatedOutfitData = {
+      name: formData.name,
+      description: formData.description,
+      image: formData.image,
+      items: formData.items.reduce((acc, item) => {
+        acc[item.id] = item;
+        return acc;
+      }, {} as {[key: string]: Product}),
+      createdAt: editingOutfit.createdAt || new Date().toISOString(),
+    };
+
+    const outfitRef = ref(db, `outfits/${editingOutfit.id}`);
+    set(outfitRef, updatedOutfitData);
+    
     setIsEditDialogOpen(false);
     setEditingOutfit(null);
     resetForm();
   };
 
   const handleDelete = () => {
-    if (outfitToDelete) {
-      setOutfits(outfits.filter(o => o.id !== outfitToDelete.id));
+    if (outfitToDelete && db) {
+      remove(ref(db, `outfits/${outfitToDelete.id}`));
       setOutfitToDelete(null);
     }
   };
@@ -130,7 +143,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
   // 🐛 FIX: Add defensive check for non-array input to prevent "TypeError: items.reduce is not a function"
   const getTotalPrice = (items: Product[] | null | undefined) => {
     const safeItems = Array.isArray(items) ? items : []; 
-    return safeItems.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+    return safeItems.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
   }
 
   return (
@@ -217,7 +230,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                               <p className="text-sm font-medium truncate">{item.name}</p>
                               <p className="text-xs text-muted-foreground">{item.category}</p>
                             </div>
-                            <p className="text-sm flex-shrink-0">${item.price.toFixed(2)}</p>
+                            <p className="text-sm flex-shrink-0">${(item.price || 0).toFixed(2)}</p>
                             <Button
                               onClick={() => handleToggleProductInOutfit(item, 'remove')}
                               variant="ghost"
@@ -268,7 +281,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                                   <p className="text-sm font-medium truncate">{product.name}</p>
                                   <p className="text-xs text-muted-foreground">{product.category}</p>
                                 </div>
-                                <p className="text-sm flex-shrink-0">${product.price.toFixed(2)}</p>
+                                <p className="text-sm flex-shrink-0">${(product.price || 0).toFixed(2)}</p>
                               </div>
                             );
                           })}
@@ -307,11 +320,10 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
               </TableRow>
             </TableHeader>
             <TableBody>
-              {outfits.map((outfit) => (
+              {(outfits || []).map((outfit) => (
                 <TableRow key={outfit.id}>
                   <TableCell>
                     <div className="w-12 h-16 relative rounded overflow-hidden bg-muted">
-                      {/* FIX 3 (The original location of the error): Use isValidUrl check */}
                       {isValidUrl(outfit.image) ? (
                         <Image
                           src={outfit.image}
@@ -328,7 +340,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{outfit.name}</TableCell>
-                  <TableCell>{outfit.items.length} items</TableCell>
+                  <TableCell>{(outfit.items || []).length} items</TableCell>
                   <TableCell>${getTotalPrice(outfit.items)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -431,7 +443,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                     {formData.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-3 p-2 bg-background rounded border">
                         <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                          {/* FIX 4: Use isValidUrl check */}
                           {isValidUrl(item.image) ? (
                             <Image
                               src={item.image}
@@ -448,7 +459,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                           <p className="text-sm font-medium truncate">{item.name}</p>
                           <p className="text-xs text-muted-foreground">{item.category}</p>
                         </div>
-                        <p className="text-sm flex-shrink-0">${item.price.toFixed(2)}</p>
+                        <p className="text-sm flex-shrink-0">${(item.price || 0).toFixed(2)}</p>
                         <Button
                           onClick={() => handleToggleProductInOutfit(item, 'remove')}
                           variant="ghost"
@@ -482,7 +493,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                             onClick={() => !isAdded && handleToggleProductInOutfit(product, 'add')}
                           >
                             <div className="w-12 h-16 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                              {/* FIX 5: Use isValidUrl check */}
                               {isValidUrl(product.image) ? (
                                 <Image
                                   src={product.image}
@@ -499,7 +509,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                               <p className="text-sm font-medium truncate">{product.name}</p>
                               <p className="text-xs text-muted-foreground">{product.category}</p>
                             </div>
-                            <p className="text-sm flex-shrink-0">${product.price.toFixed(2)}</p>
+                            <p className="text-sm flex-shrink-0">${(product.price || 0).toFixed(2)}</p>
                           </div>
                         );
                       })}
@@ -535,7 +545,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-muted">
-                  {/* FIX 6: Use isValidUrl check */}
                   {isValidUrl(viewingOutfit?.image) ? (
                     <Image
                       src={viewingOutfit?.image || ''}
@@ -566,7 +575,6 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                     viewingOutfit.items.map((item, index) => (
                       <div key={index} className="flex items-center gap-4 p-3 border rounded-lg bg-background hover:shadow-sm transition-shadow">
                         <div className="w-16 h-20 relative rounded overflow-hidden bg-muted flex-shrink-0">
-                          {/* FIX 7: Use isValidUrl check */}
                           {isValidUrl(item.image) ? (
                             <Image
                               src={item.image}
@@ -582,7 +590,7 @@ export function OutfitManagement({ outfits, setOutfits, allProducts }: OutfitMan
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{item.name}</p>
                           <p className="text-sm text-muted-foreground">{item.category}</p>
-                          <p className="text-sm font-semibold mt-1">${item.price.toFixed(2)}</p>
+                          <p className="text-sm font-semibold mt-1">${(item.price || 0).toFixed(2)}</p>
                         </div>
                       </div>
                     ))

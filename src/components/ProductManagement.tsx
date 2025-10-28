@@ -15,6 +15,8 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { Product } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
+import { useDatabase } from '@/firebase';
+import { ref, set, push, remove } from 'firebase/database';
 
 // Define the shape of the form data (price is a string for input fields)
 type ProductFormData = Omit<Product, 'id' | 'price'> & { price: string };
@@ -39,6 +41,7 @@ const initialFormData: ProductFormData = {
 };
 
 export function ProductManagement({ products, setProducts }: ProductManagementProps) {
+  const db = useDatabase();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -58,19 +61,20 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
   }, [products, filterCategory]);
 
   const handleAdd = () => {
-    const newProduct: Product = {
-      id: uuidv4(),
+    if (!db) return;
+    const newProductData = {
       name: formData.name,
       price: parseFloat(formData.price) || 0,
       image: formData.image,
-      imageHint: formData.imageHint || '', // Ensure it's never undefined
+      imageHint: formData.imageHint || '',
       category: formData.category,
       description: formData.description,
       affiliateLink: formData.affiliateLink,
     };
-
-    const newProducts = [...products, newProduct];
-    setProducts(newProducts);
+    
+    const newProductRef = push(ref(db, 'products'));
+    set(newProductRef, newProductData);
+    
     setIsAddDialogOpen(false);
     resetForm();
   };
@@ -89,26 +93,21 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
     setIsEditDialogOpen(true);
   };
 
-  // ✅ FIX: The critical update logic to prevent `undefined` values from reaching Firebase
   const handleUpdate = () => {
-    if (!editingProduct) return;
+    if (!editingProduct || !db) return;
 
-    const updatedProducts = products.map(p =>
-      p.id === editingProduct.id
-        ? {
-          ...p,
-          name: formData.name,
-          price: parseFloat(formData.price) || 0,
-          image: formData.image || '', // Ensure string fields are never undefined
-          imageHint: formData.imageHint || '', // 🏆 THIS IS THE CRITICAL FIX for the error
-          category: formData.category,
-          description: formData.description || '', // Ensure string fields are never undefined
-          affiliateLink: formData.affiliateLink || '', // Ensure string fields are never undefined
-        }
-        : p
-    );
+    const updatedProductData = {
+        name: formData.name,
+        price: parseFloat(formData.price) || 0,
+        image: formData.image || '',
+        imageHint: formData.imageHint || '',
+        category: formData.category,
+        description: formData.description || '',
+        affiliateLink: formData.affiliateLink || '',
+    };
     
-    setProducts(updatedProducts);
+    const productRef = ref(db, `products/${editingProduct.id}`);
+    set(productRef, updatedProductData);
 
     setIsEditDialogOpen(false); 
     setEditingProduct(null);
@@ -116,9 +115,9 @@ export function ProductManagement({ products, setProducts }: ProductManagementPr
   };
 
   const handleDelete = () => {
-    if (productToDelete) {
-      const remainingProducts = products.filter(p => p.id !== productToDelete.id);
-      setProducts(remainingProducts);
+    if (productToDelete && db) {
+      const productRef = ref(db, `products/${productToDelete.id}`);
+      remove(productRef);
       setProductToDelete(null);
     }
   };
